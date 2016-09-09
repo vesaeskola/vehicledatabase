@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="App.xaml.cpp" />
+    <ClCompile Include="DetailPage.xaml.cpp" />
+    <ClCompile Include="MasterDetailPage.xaml.cpp" />
+    <ClCompile Include="dbengine.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="winrt_utils.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="WellcomePage.xaml.cpp" />
+    <ClCompile Include="enginepool.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="NewEventPage.xaml.cpp" />
+    <ClCompile Include="NewFuellingPage.xaml.cpp" />
+    <ClCompile Include="NewServicePage.xaml.cpp" />
+    <ClCompile Include="NewVehiclePage.xaml.cpp" />
+    <ClCompile Include="EventListPage.xaml.cpp" />
+    <ClCompile Include="dataobjects.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="datamodels.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DetailPage.xaml.h" />
+    <ClInclude Include="App.xaml.h" />
+    <ClInclude Include="MasterDetailPage.xaml.h" />
+    <ClInclude Include="dbengine.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="sql_lite\sqlite3.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="winrt_utils.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="WellcomePage.xaml.h" />
+    <ClInclude Include="enginepool.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="NewEventPage.xaml.h" />
+    <ClInclude Include="NewFuellingPage.xaml.h" />
+    <ClInclude Include="NewServicePage.xaml.h" />
+    <ClInclude Include="NewVehiclePage.xaml.h" />
+    <ClInclude Include="dataobjects.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="EventListPage.xaml.h" />
+    <ClInclude Include="datamodels.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="vehicleDB.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\smalltile-sdk.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\splash-sdk.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\squaretile-sdk.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\storelogo-sdk.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\tile-sdk.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\button_base.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-100.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-125.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-150.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-400.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-100.jpg" />
+    <Image Include="Assets\Square71x71Logo.scale-100.jpg" />
+    <Image Include="Assets\Square310x310Logo.scale-100.png" />
+    <Image Include="Assets\SplashScreen.scale-100.png" />
+    <Image Include="Assets\Wide310x150Logo.scale-100.png">
+      <Filter>assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-48.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="vehicleDB_TemporaryKey.pfx" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="DetailPage.xaml" />
+    <Page Include="MasterDetailPage.xaml" />
+    <Page Include="Styles.xaml" />
+    <Page Include="WellcomePage.xaml" />
+    <Page Include="NewEventPage.xaml" />
+    <Page Include="NewServicePage.xaml" />
+    <Page Include="NewVehiclePage.xaml" />
+    <Page Include="NewFuellingPage.xaml" />
+    <Page Include="EventListPage.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{2829670a-0221-4228-8b32-c4abb88d0cff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc">
+      <UniqueIdentifier>{f8a8dc23-f319-43d4-81da-0621e8d4d4d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets">
+      <UniqueIdentifier>{da284d12-1d21-470b-bdd5-94a7544b545e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
