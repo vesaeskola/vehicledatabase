@@ -69,11 +69,10 @@ void NewVehiclePage::VehicleInfoEventHandler(VehicleInfo^ vehicle)
         std::wstring wideString = std::to_wstring(vehicle->Year);
         textBox_Year->Text = ref new String(wideString.c_str());
     }
-    
-    RadioButton_unit_gallon->IsChecked = vehicle->FuelUnitId == 1 ? true : false;
-    RadioButton_unit_liter->IsChecked = vehicle->FuelUnitId == 1 ? false : true;
-    RadioButton_unit_km->IsChecked = vehicle->OdometerUnitId == 1 ? false : true;
-    RadioButton_unit_miles->IsChecked = vehicle->OdometerUnitId == 1 ? true : false;
+
+    comboBox1->SelectedIndex = vehicle->OdometerUnitId == 1 ? 1 : 0;
+    comboBox2->SelectedIndex = vehicle->FuelUnitId == 1 ? 1 : 0;
+
     textBox_description->Text = vehicle->Description;
     textBox_RegPlate->Text = vehicle->RegPlate;
     textBox_VIN->Text = vehicle->VinCode;
@@ -200,6 +199,8 @@ void NewVehiclePage::OnDone_Click(Object ^ sender, Windows::UI::Xaml::RoutedEven
         {
             DebugOut("NewVehiclePage::OnDone_Click: addVehicle failed");
         }
+        PageNavigateArgs^ args = ref new PageNavigateArgs(-1, PageArgs::PageArgsVehicleEntered, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(MasterDetailPage::typeid), args);
     }
     else
     {
@@ -208,11 +209,9 @@ void NewVehiclePage::OnDone_Click(Object ^ sender, Windows::UI::Xaml::RoutedEven
         {
             DebugOut("NewVehiclePage::OnDone_Click: updateVehicle failed");
         }
-
+        PageNavigateArgs^ args = ref new PageNavigateArgs(-1, PageArgs::PageArgsVehicleModified, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(MasterDetailPage::typeid), args);
     }
-
-    PageNavigateArgs^ args = ref new PageNavigateArgs(-1, PageArgs::PageArgsVehicleEntered, nullptr);
-    this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(MasterDetailPage::typeid), args);
 }
 
 /*++
@@ -245,21 +244,19 @@ VehicleInfo^ NewVehiclePage::PopulateVehicleInfoObject()
 {
     VehicleInfo^ vehicleInfo = ref new VehicleInfo();
 
+    vehicleInfo->VinCode = textBox_VIN->Text;
     vehicleInfo->Make = textBox_Make->Text;
     vehicleInfo->Model = textBox_Model->Text;
-
     if (textBox_Year->Text->Length())
     {
         vehicleInfo->Year = _wtoi(textBox_Year->Text->Data());
     }
 
-    vehicleInfo->Description = textBox_description->Text;
     vehicleInfo->RegPlate = textBox_RegPlate->Text;
-    vehicleInfo->VinCode = textBox_VIN->Text;
+    vehicleInfo->Description = textBox_description->Text;
 
-    vehicleInfo->FuelUnitId = RadioButton_unit_liter->IsChecked ? 0 : 1;     // 0 = liter, 1 = gallons
-    vehicleInfo->OdometerUnitId = RadioButton_unit_km->IsChecked ? 0 : 1;    // 0 = km, 1 = mails
-
+    vehicleInfo->FuelUnitId = comboBox2->SelectedIndex == 0 ? 0 : 1;
+    vehicleInfo->OdometerUnitId = comboBox1->SelectedIndex == 0 ?  0 : 1;
     return vehicleInfo;
 }
 

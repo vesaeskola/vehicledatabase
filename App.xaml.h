@@ -38,4 +38,36 @@ namespace MasterDetailApp
         void OnSuspending(Platform::Object^ sender, Windows::ApplicationModel::SuspendingEventArgs^ e);
         void OnNavigationFailed(Platform::Object ^sender, Windows::UI::Xaml::Navigation::NavigationFailedEventArgs ^e);
     };
+    /*
+    public enum class Orientations : int
+    {
+        Portrait,
+        Landscape
+    };
+
+    ref class DeviceInformation sealed
+    {
+        public:
+
+            property Orientations Orientation()
+            {
+                Orientations get()
+                {
+                    Windows::Graphics::Display::DisplayInformation di;
+                    return di.GetForCurrentView()->CurrentOrientation == Windows::Graphics::Display::DisplayOrientations::Landscape ? Orientations::Landscape : Orientations::Portrait;
+                }
+            }
+
+            DependencyProperty OrientationProperty =
+                DependencyProperty.Register(nameof(Orientation), typeof(Orientations), typeof(DeviceTrigger),
+                    new PropertyMetadata(Orientations.Portrait));
+    };
+
+    ref class DeviceTrigger : StateTriggerBase sealed
+    {
+    };
+
+    DependencyProperty^ OrientationProperty = DependencyProperty
+    */
+
 }

@@ -8,7 +8,7 @@ Abstract:
 
 This module declare NewEventPage class. NewEventPage implement user interface to enter and edit vehicle event.
 Event could be mileage, accesory purchase, trip, memo or other kind of note. Event contain date, mileage value,
-prise and general description.
+price and general description.
 
 Environment:
 

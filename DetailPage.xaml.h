@@ -39,19 +39,31 @@ namespace MasterDetailApp
         DetailPage();
 
         /*++
+        Routine Description:
+
+        Load the given file into vehicle image of the page
+
+        Arguments:
+
+        file - The file to be load
+
+        --*/
+        void SetVehicleImage(Windows::Storage::StorageFile^ file);
+
+        /*++
         Property Description:
 
         SelectedVehicle. Shared property from MasterDetail view ListView control. Note. this is not
-        fully utilized.
+        fully utilized and should be eliminated.
 
         --*/
-        property MasterDetailApp::ViewModels::VehicleListItem^ SelectedVehicle
+        property MasterDetailApp::VehicleInfo^ SelectedVehicle
         {
-            MasterDetailApp::ViewModels::VehicleListItem^ get()
+            MasterDetailApp::VehicleInfo^ get()
             {
-                return safe_cast<MasterDetailApp::ViewModels::VehicleListItem^>(GetValue(s_itemProperty));
+                return safe_cast<MasterDetailApp::VehicleInfo^>(GetValue(s_itemProperty));
             }
-            void set(MasterDetailApp::ViewModels::VehicleListItem^ value)
+            void set(MasterDetailApp::VehicleInfo^ value)
             {
                 SetValue(s_itemProperty, value);
             }
@@ -85,7 +97,8 @@ namespace MasterDetailApp
         /*++
         Routine Description:
 
-        ???
+        Called from App.xaml.cpp. Register dependency property from ItemViewModel object to DetailPage object.
+        This ItemViewModel object is set in the OnNavigateTo method to point to selected item of ListView
 
         --*/
         static void RegisterDependencyProperties();
@@ -240,7 +253,8 @@ namespace MasterDetailApp
         /*++
         Routine Description:
 
-        ???
+        User can resize the page view which could case demand to navigate back to detail view, calling
+        do the trick.
 
         Arguments:
 
@@ -266,7 +280,8 @@ namespace MasterDetailApp
 
         Arguments:
 
-        e - Event arguments
+        sender - sender object of this event
+        e - Event data that can be examined by overriding code
 
         --*/
         void PageRoot_Loaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
@@ -278,7 +293,8 @@ namespace MasterDetailApp
 
         Arguments:
 
-        e - Event arguments
+        sender - sender object of this event
+        e - Event data that can be examined by overriding code
 
         --*/
         void PageRoot_Unloaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
@@ -290,7 +306,8 @@ namespace MasterDetailApp
 
         Arguments:
 
-        e - Event arguments
+        sender - sender object of this event
+        e - Event data that can be examined by overriding code
 
         --*/
         void Window_SizeChanged(Platform::Object ^sender, Windows::UI::Core::WindowSizeChangedEventArgs ^e);
@@ -302,16 +319,29 @@ namespace MasterDetailApp
 
         Arguments:
 
-        e - Event arguments
+        sender - sender object of this event
+        e - Event data that can be examined by overriding code
 
         --*/
         void DetailPage_BackRequested(Platform::Object ^sender, Windows::UI::Core::BackRequestedEventArgs ^args);
 
         /*++
-        Event registration tokens.
+        Event registration tokens. Used to monitor windows size change and hardware back button clicks. 
         --*/
         Windows::Foundation::EventRegistrationToken m_sizeChangedEventRegistrationToken;
         Windows::Foundation::EventRegistrationToken m_backRequestedEventRegistrationToken;
 
-    };
+        /*++
+        Routine Description:
+
+        Event handler for vehicle image tapping. Select a new image for the vehicle.
+
+        Arguments:
+
+        sender - sender object of this event
+        e - Event data that can be examined by overriding code
+
+        --*/
+        void OnSelectVehicleImage(Platform::Object^ sender, Windows::UI::Xaml::Input::TappedRoutedEventArgs^ e);
+};
 }

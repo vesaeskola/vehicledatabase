@@ -16,10 +16,39 @@
                 <VisualState x:Name="DefaultState">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="720" />
+
                     </VisualState.StateTriggers>
                 </VisualState>
 
-                <!-- Width: 0....719 pix -->
+                <!-- Width: 550...719 pix -->
+                <VisualState x:Name="MidState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="550" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="grid1.Width" Value="300" />
+                        <Setter Target="grid2.Width" Value="300" />
+                        <Setter Target="textBox_Model.Width" Value="300" />
+                        <Setter Target="textBox_Year.Width" Value="300" />
+                        <Setter Target="textBox_VIN.Width" Value="300" />
+                        <Setter Target="textBox_description.Width" Value="600" />
+                        <Setter Target="comboBox1.Width" Value="200" />
+                        <Setter Target="comboBox2.Width" Value="200" />
+
+                        <Setter Target="go_back.Width" Value="85"  />
+                        <Setter Target="go_back.Height" Value="20" />
+                        <Setter Target="go_back_text.FontSize" Value="12" />
+                        <Setter Target="done.Width" Value="85"  />
+                        <Setter Target="done.Height" Value="20" />
+                        <Setter Target="done.Margin" Value="200,10,0,0" />
+                        <Setter Target="done_text.FontSize" Value="12" />
+                        <Setter Target="done2.Width" Value="85"  />
+                        <Setter Target="done2.Height" Value="20" />
+                        <Setter Target="done2_text.FontSize" Value="12" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <!-- Width: 0....400 pix -->
                 <VisualState x:Name="NarrowState">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="0" />
@@ -32,7 +61,11 @@
                         <Setter Target="done.Width" Value="85"  />
                         <Setter Target="done.Height" Value="20" />
                         <Setter Target="done_text.FontSize" Value="12" />
-                        <Setter Target="textBox_description.Width" Value="322" />
+                        <Setter Target="done.Margin" Value="100,10,0,0" />
+                        <Setter Target="done2.Width" Value="85"  />
+                        <Setter Target="done2.Height" Value="20" />
+                        <Setter Target="done2_text.FontSize" Value="12" />
+                        <Setter Target="textBox_description.Width" Value="340" />
                     </VisualState.Setters>
 
                 </VisualState>
@@ -53,25 +86,25 @@
 
 
             <!-- TitlePane1 -->
-            <StackPanel x:Name="HeaderPanel" Grid.Row="0" Orientation="Horizontal" Margin="10,0,0,0">
-                <Button x:Name="go_back" HorizontalAlignment="Center" Width="190" Height="40" Click="OnBack_Click">
-                    <Button.Background>
-                        <ImageBrush ImageSource="Assets/button_base.png"/>
-                    </Button.Background>
-                    <Button.Content>
-                        <TextBlock x:Name="go_back_text" Text="Back" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
-                    </Button.Content>
-                </Button>
+        <StackPanel x:Name="HeaderPanel" Grid.Row="0" Orientation="Horizontal" Margin="10,10,0,0">
+        <Button x:Name="go_back" HorizontalAlignment="Center" Margin="0,0,60,0" Width="190" Height="40" Click="OnBack_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="Assets/button_base.png"/>
+            </Button.Background>
+            <Button.Content>
+                <TextBlock x:Name="go_back_text" Text="Back" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+            </Button.Content>
+        </Button>
 
-                <Button x:Name="done" HorizontalAlignment="Center" Width="190" Height="40" Click="OnDone_Click">
-                    <Button.Background>
-                        <ImageBrush ImageSource="Assets/button_base.png"/>
-                    </Button.Background>
-                    <Button.Content>
-                        <TextBlock x:Name="done_text" Text="Done" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
-                    </Button.Content>
-                </Button>
-            </StackPanel>
+        <Button x:Name="done" HorizontalAlignment="Center" Width="190" Height="40" Click="OnDone_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="Assets/button_base.png"/>
+            </Button.Background>
+            <Button.Content>
+                <TextBlock x:Name="done_text" Text="Done" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+            </Button.Content>
+        </Button>
+        </StackPanel>
 
             <!-- TitlePane2 -->
             <TextBlock x:Name="page_title" Text="New Vehicle" Grid.Row="1" Margin="10,0,0,0" Height="40" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="30" d:LayoutOverrides="LeftPosition, RightPosition">
@@ -85,35 +118,72 @@
 
             <!-- ContentPane-->
             <StackPanel Grid.Row="2" Margin="10,0,0,0">
-                <TextBlock Text="Register Plate" HorizontalAlignment="Left" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <TextBox x:Name="textBox_RegPlate" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="200"/>
-                <!--<TextBox x:Name="textBlock_description" HorizontalAlignment="Left" Margin="18,2,0,0" VerticalAlignment="Top" Height="160" Width="800" TextWrapping="Wrap" Foreground="#FFF0F0F0"/>-->
 
+                <!-- Register plate, mileage unit -->
+                <StackPanel Orientation="Horizontal">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="grid1" Width="200" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Make" HorizontalAlignment="Left" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <TextBox x:Name="textBox_Make" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="200"/>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock  Text="Register Plate" FontSize="12"/>
+                            <TextBox x:Name="textBox_RegPlate" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock  Text="Mileage unit" FontSize="12"/>
+                            <ComboBox x:Name="comboBox1" Grid.Row="1" Grid.Column="1" Height="35" VerticalAlignment="Top" Width="140">
+                                <ComboBoxItem x:Name="comboBox1_km" Content="Kilometers" />
+                                <ComboBoxItem x:Name="comboBox1_mi" Content="Miles" IsSelected="True"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <!-- Mage, fuel unit -->
+                <StackPanel Orientation="Horizontal">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="grid2" Width="200" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="Make" FontSize="12"/>
+                            <TextBox x:Name="textBox_Make" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                            <TextBlock  Text="Fuel unit" FontSize="12"/>
+                            <ComboBox x:Name="comboBox2" Grid.Row="1" Grid.Column="1" Height="35" VerticalAlignment="Top" Width="140">
+                                <ComboBoxItem x:Name="comboBox2_liter" Content="Liter"  />
+                                <ComboBoxItem x:Name="comboBox2_gallon" Content="Gallon" IsSelected="True" />
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
 
                 <TextBlock Text="Model" HorizontalAlignment="Left" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <TextBox x:Name="textBox_Model" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="200"/>
+                <TextBox x:Name="textBox_Model" HorizontalAlignment="Left" MinWidth="200" VerticalAlignment="Top" Height="20"/>
 
                 <TextBlock Text="Year" HorizontalAlignment="Left" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <TextBox x:Name="textBox_Year" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="200"/>
+                <TextBox x:Name="textBox_Year" HorizontalAlignment="Left" MinWidth="200" VerticalAlignment="Top" Height="20" InputScope="Number"/>
 
                 <TextBlock Text="VIN code" HorizontalAlignment="Left" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <TextBox x:Name="textBox_VIN" HorizontalAlignment="Left" VerticalAlignment="Top" Height="20" Width="200"/>
-
-                <TextBlock Text="Fuel Unit" HorizontalAlignment="Left" Margin="0,0, 0,0" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <RadioButton x:Name="RadioButton_unit_liter" GroupName="fuel_unit" Content="Litre"   IsChecked="True" Margin="18,0, 0,0"/>
-                <RadioButton x:Name="RadioButton_unit_gallon" GroupName="fuel_unit" Content="Gallon" Margin="18,0, 0,0"/>
-
-                <TextBlock Text="Odometer Unit" HorizontalAlignment="Left" Margin="0,0, 0,0" Height="14" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <RadioButton x:Name="RadioButton_unit_km" GroupName="odometer_unit" Content="km"   IsChecked="True" Margin="18,0, 0,0"/>
-                <RadioButton x:Name="RadioButton_unit_miles" GroupName="odometer_unit" Content="miles" Margin="18,0, 0,0"/>
-
+                <TextBox x:Name="textBox_VIN" HorizontalAlignment="Left" MinWidth="200" VerticalAlignment="Top" Height="20" />
                 <TextBlock Text="Description" HorizontalAlignment="Left" Height="14" Margin="0,0, 0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" FontSize="12"/>
-                <TextBox x:Name="textBox_description" HorizontalAlignment="Left" Margin="18,2,0,0" VerticalAlignment="Top" Height="160" Width="800" TextWrapping="Wrap"/>
-            </StackPanel>
+                <TextBox x:Name="textBox_description" HorizontalAlignment="Left" Margin="0,2,0,10" VerticalAlignment="Top" Height="160" Width="800" TextWrapping="Wrap"/>
 
+                <Button x:Name="done2" HorizontalAlignment="Center" Width="190" Height="40" Click="OnDone_Click">
+                    <Button.Background>
+                        <ImageBrush ImageSource="Assets/button_base.png"/>
+                    </Button.Background>
+                    <Button.Content>
+                        <TextBlock x:Name="done2_text" Text="Done" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                    </Button.Content>
+                </Button>
+
+            </StackPanel>
         </Grid>
     </ScrollViewer>
 </Page>

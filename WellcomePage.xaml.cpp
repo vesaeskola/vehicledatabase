@@ -79,5 +79,5 @@ e - Event arguments
 void WellcomePage::OnGoNewVehiclePage_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
 {
     PageNavigateArgs^ args = ref new PageNavigateArgs(-1, PageArgs::PageArgsNone, nullptr);
-    this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewVehiclePage::typeid), args);
+    Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewVehiclePage::typeid), args);
 }

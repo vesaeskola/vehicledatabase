@@ -72,15 +72,13 @@ void NewServicePage::OnNavigatedTo(NavigationEventArgs ^ e)
                     //Populate UI from FuelingInfo object, existing event will be modified
                     mPrimaryKey = serviceInfo->PrimaryKey;
 
-                    this->page_title->Text = L"Edit Service";
+                    page_title->Text = L"Edit Service";
 
                     // Here we use C++11 to convert integer to wchar*
                     std::wstring wideString = std::to_wstring(serviceInfo->Mileage);
                     textBox_odometer->Text = ref new String(wideString.c_str());
 
-                    wideString = std::to_wstring(serviceInfo->Prise);
-                    textBox_price->Text = ref new String(wideString.c_str());
-
+                    textBox_price->Text = IntToPlatformString(serviceInfo->Price);
                     textBox_description->Text = serviceInfo->Description;
 
                     int serviceType = serviceInfo->Type;
@@ -159,10 +157,11 @@ void NewServicePage::OnDone_Click(Object ^ sender, Windows::UI::Xaml::RoutedEven
 {
     if (gDatabase != nullptr)
     {
+        ServiceInfo^ serviceInfo = PopulateServiceInfoObject();
+
         if (mPrimaryKey != 0)
         {
             // Update existing service action
-            ServiceInfo^ serviceInfo = PopulateServiceInfoObject();
             if (gDatabase->updateServiceInfo(mPrimaryKey, serviceInfo) == false)
             {
                 // TBD: Open error dialog from here
@@ -171,32 +170,6 @@ void NewServicePage::OnDone_Click(Object ^ sender, Windows::UI::Xaml::RoutedEven
         }
         else if (mVehicleID != -1)
         {
-            ServiceInfo^ serviceInfo = ref new ServiceInfo();
-
-            if (textBox_price->Text->Length())
-            {
-                serviceInfo->Prise = _wtoi(textBox_price->Text->Data());
-            }
-            if (textBox_odometer->Text->Length())
-            {
-                serviceInfo->Mileage = _wtoi(textBox_odometer->Text->Data());
-            }
-
-            int serviceType = 0;
-            serviceType |= (this->checkBox_oil->IsChecked->Value == true)           ? 0x01 : 0x00;
-            serviceType |= (this->checkBox_oil_filter->IsChecked->Value == true)    ? 0x02 : 0x00;
-            serviceType |= (this->checkBox_air_filter->IsChecked->Value == true)    ? 0x04 : 0x00;
-            serviceType |= (this->checkBox_fuel_filter->IsChecked->Value == true)   ? 0x08 : 0x00;
-            serviceType |= (this->checkBox_other->IsChecked->Value == true)         ? 0x10 : 0x00;
-            serviceInfo->Type = serviceType;
-
-            DateTime dateTime = this->date_picker->Date;
-            int64 globalDate = dateTime.UniversalTime;
-            serviceInfo->Date = globalDate;
-
-            serviceInfo->Description = textBox_description->Text;
-            serviceInfo->VehicleID = mVehicleID;
-
             if (gDatabase->addServiceInfo(serviceInfo) == false)
             {
                 // TBD: Open error dialog from here
@@ -239,9 +212,13 @@ ServiceInfo^ NewServicePage::PopulateServiceInfoObject()
 {
     ServiceInfo^ serviceInfo = ref new ServiceInfo();
 
+    // 'VehicleID'
+    serviceInfo->VehicleID = mVehicleID;
+
     if (textBox_price->Text->Length())
     {
-        serviceInfo->Prise = _wtoi(textBox_price->Text->Data());
+        serviceInfo->Price = PlatformStringToInt(textBox_price->Text);
+
     }
     if (textBox_odometer->Text->Length())
     {
@@ -249,14 +226,14 @@ ServiceInfo^ NewServicePage::PopulateServiceInfoObject()
     }
 
     int serviceType = 0;
-    serviceType |= (this->checkBox_oil->IsChecked->Value == true) ? 0x01 : 0x00;
-    serviceType |= (this->checkBox_oil_filter->IsChecked->Value == true) ? 0x02 : 0x00;
-    serviceType |= (this->checkBox_air_filter->IsChecked->Value == true) ? 0x04 : 0x00;
-    serviceType |= (this->checkBox_fuel_filter->IsChecked->Value == true) ? 0x08 : 0x00;
-    serviceType |= (this->checkBox_other->IsChecked->Value == true) ? 0x10 : 0x00;
+    serviceType |= (checkBox_oil->IsChecked->Value == true) ? 0x01 : 0x00;
+    serviceType |= (checkBox_oil_filter->IsChecked->Value == true) ? 0x02 : 0x00;
+    serviceType |= (checkBox_air_filter->IsChecked->Value == true) ? 0x04 : 0x00;
+    serviceType |= (checkBox_fuel_filter->IsChecked->Value == true) ? 0x08 : 0x00;
+    serviceType |= (checkBox_other->IsChecked->Value == true) ? 0x10 : 0x00;
     serviceInfo->Type = serviceType;
 
-    DateTime dateTime = this->date_picker->Date;
+    DateTime dateTime = date_picker->Date;
     int64 globalDate = dateTime.UniversalTime;
     serviceInfo->Date = globalDate;
 

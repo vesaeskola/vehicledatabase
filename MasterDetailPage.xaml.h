@@ -57,9 +57,20 @@ namespace MasterDetailApp
         Arguments:
 
         vehicle - Vehicle info, one row of data from VECHILES table. 
-        Return Value: None.
         --*/
         void VehicleInfoEventHandler(VehicleInfo^ vehicle);
+
+        /*++
+        Routine Description:
+
+        Load the given file into vehicle image of the page
+
+        Arguments:
+
+        file - The file to be load
+
+        --*/
+        void SetVehicleImage(Windows::Storage::StorageFile^ file);
 
     protected:
         /*++
@@ -75,7 +86,9 @@ namespace MasterDetailApp
         virtual void OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e) override;
 
     private:
-        MasterDetailApp::ViewModels::VehicleListItem^ m_lastSelectedItem;
+        //MasterDetailApp::ViewModels::VehicleListItem^ m_lastSelectedItem;
+
+        MasterDetailApp::VehicleInfo^ mCurrentVehicle;
 
         /*++
         Routine Description:
@@ -247,7 +260,7 @@ namespace MasterDetailApp
         e - Event arguments
 
         --*/
-        void OnFuelling_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnFueling_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
         /*++
         Routine Description:
@@ -287,6 +300,19 @@ namespace MasterDetailApp
 
         --*/
         void OnTest_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+
+        /*++
+        Routine Description:
+
+        Event handler for menu panel. Navigate to NewVehiclePage using edit vehicle mode.
+
+        Arguments:
+
+        sender - sender object of the event
+        e - Event arguments
+
+        --*/
+        void OnEditVehicle_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
         /*++
         Routine Description:
@@ -354,6 +380,18 @@ namespace MasterDetailApp
         void OnExportDatabase_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
 
+        /*++
+        Routine Description:
+
+        Event handler for vehicle image tapping. Select a new image for the vehicle.
+
+        Arguments:
+
+        sender - sender object of this event
+        e - Event data that can be examined by overriding code
+
+        --*/
+        void OnSelectVehicleImage(Platform::Object^ sender, Windows::UI::Xaml::Input::TappedRoutedEventArgs^ e);
 
 
     private:

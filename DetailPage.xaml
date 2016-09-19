@@ -5,6 +5,7 @@
     xmlns:local="using:MasterDetailApp"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:UI="using:Microsoft.Advertising.WinRT.UI"
     mc:Ignorable="d"
     x:Name="PageRoot"
     NavigationCacheMode="Enabled"
@@ -28,7 +29,46 @@
                         <AdaptiveTrigger MinWindowWidth="721" />
                     </VisualState.StateTriggers>
                 </VisualState>
-                <!-- Width: 0....719 pix -->
+                <VisualState x:Name="MidState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="550" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="go_back.Width" Value="100"  />
+                        <Setter Target="go_back.Height" Value="20" />
+                        <Setter Target="go_back_text.FontSize" Value="12" />
+                        <Setter Target="go_fueling.Width" Value="85"  />
+                        <Setter Target="go_fueling.Height" Value="20" />
+                        <Setter Target="go_fueling_text.FontSize" Value="12" />
+                        <Setter Target="go_service.Width" Value="85"  />
+                        <Setter Target="go_service.Height" Value="20" />
+                        <Setter Target="go_service_text.FontSize" Value="12" />
+                        <Setter Target="go_event.Width" Value="85"  />
+                        <Setter Target="go_event.Height" Value="20" />
+                        <Setter Target="go_event_text.FontSize" Value="12" />
+                        <Setter Target="go_test.Width" Value="85"  />
+                        <Setter Target="go_test.Height" Value="20" />
+                        <Setter Target="go_test_text.FontSize" Value="12" />
+
+                        <Setter Target="go_fueling_action.Width" Value="85"  />
+                        <Setter Target="go_fueling_action.Height" Value="20" />
+                        <Setter Target="go_fueling_action_text.FontSize" Value="12" />
+
+                        <Setter Target="go_event_action.Width" Value="85"  />
+                        <Setter Target="go_event_action.Height" Value="20" />
+                        <Setter Target="go_event_action_text.FontSize" Value="12" />
+
+                        <Setter Target="go_service_action.Width" Value="85"  />
+                        <Setter Target="go_service_action.Height" Value="20" />
+                        <Setter Target="go_service_action_text.FontSize" Value="12" />
+
+                        <Setter Target="go_edit_vehicle.Width" Value="85"  />
+                        <Setter Target="go_edit_vehicle.Height" Value="20" />
+                        <Setter Target="go_edit_vehicle_text.FontSize" Value="12" />
+                        <Setter Target="detail_image_narrow.Height" Value="220" />
+                    </VisualState.Setters>
+                </VisualState>
+                <!-- Width: 0....400 pix -->
                 <VisualState x:Name="NarrowState">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="0" />
@@ -49,9 +89,24 @@
                         <Setter Target="go_test.Width" Value="85"  />
                         <Setter Target="go_test.Height" Value="20" />
                         <Setter Target="go_test_text.FontSize" Value="12" />
+
+                        <Setter Target="go_fueling_action.Width" Value="85"  />
+                        <Setter Target="go_fueling_action.Height" Value="20" />
+                        <Setter Target="go_fueling_action_text.FontSize" Value="12" />
+
+                        <Setter Target="go_event_action.Width" Value="85"  />
+                        <Setter Target="go_event_action.Height" Value="20" />
+                        <Setter Target="go_event_action_text.FontSize" Value="12" />
+
+                        <Setter Target="go_service_action.Width" Value="85"  />
+                        <Setter Target="go_service_action.Height" Value="20" />
+                        <Setter Target="go_service_action_text.FontSize" Value="12" />
+
                         <Setter Target="go_edit_vehicle.Width" Value="85"  />
                         <Setter Target="go_edit_vehicle.Height" Value="20" />
                         <Setter Target="go_edit_vehicle_text.FontSize" Value="12" />
+
+                        <Setter Target="detail_image_narrow.Height" Value="220" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
@@ -83,7 +138,7 @@
                         <ImageBrush ImageSource="Assets/button_base.png"/>
                     </Button.Background>
                     <Button.Content>
-                        <TextBlock x:Name="go_fueling_text" Text="Fueling" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                        <TextBlock x:Name="go_fueling_text" Text="Refueling" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
                     </Button.Content>
                 </Button>
                 <Button x:Name="go_service" HorizontalAlignment="Center" Width="190" Height="40" Click="OnService_Click">
@@ -102,7 +157,7 @@
                         <TextBlock x:Name="go_event_text" Text="Event" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
                     </Button.Content>
                 </Button>
-                <Button x:Name="go_test" HorizontalAlignment="Center" Width="190" Height="40"  Click="OnTest_Click">
+                <Button x:Name="go_test" HorizontalAlignment="Center" Visibility="Collapsed" Width="190" Height="40"  Click="OnTest_Click">
                     <Button.Background>
                         <ImageBrush ImageSource="Assets/button_base.png"/>
                     </Button.Background>
@@ -112,7 +167,9 @@
                 </Button>
             </StackPanel>
 
+            <!-- DetailContentPane1 -->
             <StackPanel x:Name="DetailContent1" Grid.Row="1" Margin="2,2,2,2" Background="{ThemeResource AppBarBorderThemeBrush}">
+
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="make" Margin="6,0" FontSize="16" Style="{ThemeResource  SubtitleTextBlockStyle}" HorizontalAlignment="Left" Text="Make" FontWeight="Bold" />
                     <TextBlock x:Name="model" Margin="10,0" FontSize="16" HorizontalAlignment="Left" Style="{ThemeResource SubtitleTextBlockStyle}" Text="Model" FontWeight="Bold" />
@@ -131,50 +188,105 @@
                 </Grid>
             </StackPanel>
 
-            <!-- DetailContentPane3 -->
-            <StackPanel  Grid.Row="2" Margin="8,10,20,0" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" >
+            <!-- DetailContentPane2 -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="620" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
 
-                <TextBlock Text="Recent:" FontSize="16" Style="{ThemeResource  SubtitleTextBlockStyle}" HorizontalAlignment="Left" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top"  FontWeight="Bold"/>
+                <StackPanel Grid.Column="0"  Margin="20,2,0,0" Width="Auto" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock Text="Recent:" Style="{ThemeResource  HeaderTextBlockStyle}" HorizontalAlignment="Right" Margin="0,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
 
-                <!-- Last event -->
-                <StackPanel Orientation="Horizontal" Margin="2,2,0,2">
-                    <TextBlock x:Name="DetailContent3_1" Height="Auto"  FontSize="16" Text="DetailContent3_1" Tapped="OnLastEvent_Click" />
-                    <Button x:Name="go_event_action" HorizontalAlignment="Center" Width="0" Height="20" Click="OnLastEvent_Click">
-                        <Button.Background>
-                            <ImageBrush ImageSource="Assets/button_base.png"/>
-                        </Button.Background>
-                        <Button.Content>
-                            <TextBlock x:Name="go_event_list_text" Text="More..." HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="12" Canvas.ZIndex="1" Margin="-50,-10" />
-                        </Button.Content>
-                    </Button>
+                        <!-- Vehicle database Mobile -->
+                        <UI:AdControl Grid.Column="1" ApplicationId="f98f295c-f7ec-43e4-8c5e-81e029e2fa9d"
+                          AdUnitId="313933"
+                          Margin="20,0,0,0"
+                          HorizontalAlignment="Left"
+                          Width="68"
+                          Height="68"
+                          VerticalAlignment="Top"/>
+                        
+                        <!--
+                        <UI:AdControl Grid.Column="1" ApplicationId="3f83fe91-d6be-434d-a0ae-7351c5a997f1"
+                      AdUnitId="10865270"
+                      HorizontalAlignment="Left"
+                      Width="64"
+                      Height="64"
+                      VerticalAlignment="Top"/>
+                        -->
+                    </Grid>
+                    <!-- Last event -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="230"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="DetailContent3_1" Grid.Column="0" Style="{ThemeResource TitleTextBlockStyle}" Margin="0,0,0,10" Height="Auto"  FontSize="16" Text="DetailContent3_1" Tapped="OnLastEvent_Click" />
+                        <Button x:Name="go_event_action" Grid.Column="1" Margin="20,0" HorizontalAlignment="Center" Width="190" Height="40" Click="OnLastEvent_Click">
+                            <Button.Background>
+                                <ImageBrush ImageSource="Assets/button_base.png"/>
+                            </Button.Background>
+                            <Button.Content>
+                                <TextBlock x:Name="go_event_action_text" Text="More..." HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+
+                    <!-- Last service -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="230"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="DetailContent3_2" Style="{ThemeResource TitleTextBlockStyle}" Height="Auto" Margin="0,0,0,10" FontSize="16" Text="DetailContent3_2"  Tapped="OnLastService_Click"/>
+                        <Button x:Name="go_service_action" Grid.Column="1" Margin="20,0" HorizontalAlignment="Center" Width="190" Height="40"  Click="OnLastService_Click">
+                            <Button.Background>
+                                <ImageBrush ImageSource="Assets/button_base.png"/>
+                            </Button.Background>
+                            <Button.Content>
+                                <TextBlock x:Name="go_service_action_text" Text="More..." HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+
+                    <!-- Last fueling -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="230"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="DetailContent3_3" Style="{ThemeResource TitleTextBlockStyle}" Height="Auto" Margin="0,0,0,10" FontSize="16" Text="DetailContent3_3" Tapped="OnLastFueling_Click" />
+                        <Button x:Name="go_fueling_action" Grid.Column="1" Margin="20,0" HorizontalAlignment="Center" Width="190" Height="40" Click="OnLastFueling_Click">
+                            <Button.Background>
+                                <ImageBrush ImageSource="Assets/button_base.png"/>
+                            </Button.Background>
+                            <Button.Content>
+                                <TextBlock x:Name="go_fueling_action_text" Text="More..." HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                            </Button.Content>
+                        </Button>
+                    </Grid>
+
+                    <Image x:Name="detail_image_narrow" Height="300" Tapped="OnSelectVehicleImage">
+                        <Image.Source>
+                            <BitmapImage x:Name="imageSource" UriSource="Assets/your_vehicle.png"/>
+                        </Image.Source>
+                    </Image>
+
+                    <!--<Image x:Name="
+                    " Grid.Column="1" Source="Assets/your_vehicle.png" Margin="0,20" Height="240" Canvas.ZIndex="1" />-->
+
                 </StackPanel>
 
-                <!-- Last service -->
-                <StackPanel Orientation="Horizontal" Margin="2,2,0,2">
-                    <TextBlock x:Name="DetailContent3_2" Height="Auto"  FontSize="16" Text="DetailContent3_2"  Tapped="OnLastService_Click"/>
-                    <Button x:Name="go_service_action" HorizontalAlignment="Center" Width="0" Height="20" Click="OnLastService_Click">
-                        <Button.Background>
-                            <ImageBrush ImageSource="Assets/button_base.png"/>
-                        </Button.Background>
-                        <Button.Content>
-                            <TextBlock x:Name="go_service_list_text" Text="More..." HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="12" Canvas.ZIndex="1" Margin="-50,-10" />
-                        </Button.Content>
-                    </Button>
-                </StackPanel>
-
-                <!-- Last fueling -->
-                <StackPanel Orientation="Horizontal" Margin="2,2,0,2">
-                    <TextBlock x:Name="DetailContent3_3" Height="Auto"  FontSize="16" Text="DetailContent3_3" Tapped="OnLastFueling_Click" />
-                    <Button x:Name="go_fueling_action" HorizontalAlignment="Center" Width="0" Height="20" Click="OnLastFueling_Click">
-                        <Button.Background>
-                            <ImageBrush ImageSource="Assets/button_base.png"/>
-                        </Button.Background>
-                        <Button.Content>
-                            <TextBlock x:Name="go_fueling_list_text" Text="More..." HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="12" Canvas.ZIndex="1" Margin="-50,-10" />
-                        </Button.Content>
-                    </Button>
-                </StackPanel>
-            </StackPanel>
+            </Grid>
         </Grid>
     </ScrollViewer>
 </Page>

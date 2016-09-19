@@ -21,7 +21,6 @@ Copyright © 2016 Vesa Eskola.
 
 #include "pch.h"
 
-
 namespace MasterDetailApp { namespace ViewModels {
 
         /*++
@@ -131,8 +130,8 @@ namespace MasterDetailApp { namespace ViewModels {
         /*++
         Class Description:
 
-        ActionListItem. Represent the action data shown in one row of action list. Action could be
-        fuelling, service or common event
+        ActionListItem. Represent the action data shown in one item of action list. Action could be
+        refueling, service or common event
 
         --*/
         public ref class ActionListItem sealed
@@ -143,140 +142,50 @@ namespace MasterDetailApp { namespace ViewModels {
             /*++
             Property Description:
 
-            Column1. Text information to action list column 1. Content is formatted according action type.
+            Row1. Text information to action list row 1. Content is formatted according action type.
 
             --*/
-            property Platform::String^ Column1
+            property Platform::String^ Row1
             {
-                Platform::String^ get()
-                {
-                    Platform::String^ retValue = ref new Platform::String;
-                    if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        Windows::Foundation::DateTime dateTime;
-                        dateTime.UniversalTime = dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Date;
-                        Windows::Globalization::DateTimeFormatting::DateTimeFormatter^ dtf = Windows::Globalization::DateTimeFormatting::DateTimeFormatter::ShortDate::get();
-                        retValue = dateTime.UniversalTime != 0 ? dtf->Format(dateTime) : "";
-                        return retValue;
-                    }
-                    else if (dynamic_cast<FuelingInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        Windows::Foundation::DateTime dateTime;
-                        dateTime.UniversalTime = dynamic_cast<FuelingInfo^>(mActionInfo->getActionObject())->Date;
-                        Windows::Globalization::DateTimeFormatting::DateTimeFormatter^ dtf = Windows::Globalization::DateTimeFormatting::DateTimeFormatter::ShortDate::get();
-                        retValue = dateTime.UniversalTime != 0 ? dtf->Format(dateTime) : "";
-                        return retValue;
-                    }
-                    else if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        Windows::Foundation::DateTime dateTime;
-                        dateTime.UniversalTime = dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->Date;
-                        Windows::Globalization::DateTimeFormatting::DateTimeFormatter^ dtf = Windows::Globalization::DateTimeFormatting::DateTimeFormatter::ShortDate::get();
-                        retValue = dateTime.UniversalTime != 0 ? dtf->Format(dateTime) : "";
-                        return retValue;
-                    }
-                    else
-                    {
-                        retValue = "";
-                    }
-                    return retValue;
-                }
-            }
+                Platform::String^ get();
+                void set(Platform::String^ row1);
+            };
 
             /*++
             Property Description:
 
-            Column2. Text information to action list column 2. Content is formatted according action type.
+            Row2_1. Return milage text into action list row 2 column 1.
 
             --*/
-            property Platform::String^ Column2
+            property Platform::String^ Row2_1
             {
-                Platform::String^ get()
-                {
-                    Platform::String^ retValue = ref new Platform::String;
-                    if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        retValue = L"Mileage: " + dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Mileage;
-                        return retValue;
-                    }
-                    else if (dynamic_cast<FuelingInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        retValue = L"Mileage: " + dynamic_cast<FuelingInfo^>(mActionInfo->getActionObject())->Mileage;
-                    }
-                    else if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        retValue = L"Mileage: " + dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->Mileage;
-                    }
-                    else
-                    {
-                        retValue = "";
-                    }
-                    return retValue;
-                }
-            }
+                Platform::String^ get();
+                void set(Platform::String^ row2_1);
+            };
 
             /*++
             Property Description:
 
-            Column3. Text information to action list column 1. Not used.
+            Row2_2. Return date text into action list row 2 column 1.
 
             --*/
-            property Platform::String^ Column3
+            property Platform::String^ Row2_2
             {
-                Platform::String^ get()
-                {
-                    Platform::String^ retValue = ref new Platform::String;
-                    // TBD: Format col3 here if needed
-                    retValue = "";
-                    return retValue;
-                }
-            }
+                Platform::String^ get();
+                void set(Platform::String^ row2_2);
+            };
 
             /*++
             Property Description:
 
-            Row2. Text information to action list column 1
+            IconSrc. Icon source path for the action list item.
 
             --*/
-            property Platform::String^ Row2
+            property Platform::String^ IconSrc
             {
-                Platform::String^ get()
-                {
-                    Platform::String^ retValue = ref new Platform::String();
-                    if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        retValue = L"Type:";
-                        if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Type == 0x00) retValue += L"Service not specified";
-                        if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Type & 0x01) retValue  += L"O";
-                        if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Type & 0x02) retValue  += L":OF";
-                        if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Type & 0x04) retValue  += L":AF";
-                        if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Type & 0x08) retValue  += L":FF";
-                        if (dynamic_cast<ServiceInfo^>(mActionInfo->getActionObject())->Type & 0x10) retValue  += L":Other";
-
-                        return retValue;
-                    }
-                    else if (dynamic_cast<FuelingInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        retValue = "Amount: " + dynamic_cast<FuelingInfo^>(mActionInfo->getActionObject())->Amount;
-                        return retValue;
-                    }
-                    else if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject()) != nullptr)
-                    {
-                        if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->EventID == 0x01) retValue += L"Mileage memo";
-                        if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->EventID == 0x02) retValue += L"Accessory purchase";
-                        if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->EventID == 0x03) retValue += L"Cruise";
-                        if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->EventID == 0x04) retValue += L"Memory";
-                        if (dynamic_cast<EventInfo^>(mActionInfo->getActionObject())->EventID == 0x05) retValue += L"Other action";
-                        return retValue;
-                    }
-                    else
-                    {
-                        retValue = "";
-                    }
-                    return retValue;
-                }
-            }
-
+                Platform::String^ get();
+                void set(Platform::String^ row1);
+            };
 
         internal:
             ActionInfo^ GetActionInfo () { return mActionInfo; }
@@ -299,15 +208,30 @@ namespace MasterDetailApp { namespace ViewModels {
             /*++
             Routine Description:
 
-            Event handler for the DatabaseEngine object. Each row found from VECHILES table trigger this event handler.
-            Store the vehicle info into vehicle list.
+            Set mileage unit of the current vehicle
 
             Arguments:
 
-            vehicle - Vehicle info, one row of data from VECHILES table.
-
-            Return Value: None.
+            int odometerUnitId: 0 = km, 1 = mil.
             --*/
+            void SetOdometerUnit (int odometerUnitId)
+            {
+                mCurrentVechileOdometerUnitId = odometerUnitId;
+            }
+
+            /*++
+            Routine Description:
+
+            Set fuel unit of the current vehicle
+
+            Arguments:
+
+            int fuelUnitId: 0 = liter, 1 = gallon
+            --*/
+            void SetFuelUnit(int fuelUnitId)
+            {
+                mCurrentVechileFuelUnitId = fuelUnitId;
+            }
 
             /*++
             Routine Description:
@@ -324,6 +248,15 @@ namespace MasterDetailApp { namespace ViewModels {
             void ActionInfoEventHandler(ActionInfo^ actionInfo);
 
         private:
+            /*++
+            Mileage unit of the current vehicle
+            --*/
+            int mCurrentVechileOdometerUnitId;
+
+            /*++
+            Fuel unit of the current vehicle
+            --*/
+            int mCurrentVechileFuelUnitId;
 
         };
 

@@ -55,7 +55,7 @@ namespace MasterDetailApp
         e - Event data that can be examined by overriding code
 
         --*/
-        virtual void EventListPage::OnNavigatedFrom(Windows::UI::Xaml::Navigation::NavigationEventArgs ^ e) override;
+        virtual void OnNavigatedFrom(Windows::UI::Xaml::Navigation::NavigationEventArgs ^ e) override;
 
     private:
         /*++
@@ -126,6 +126,19 @@ namespace MasterDetailApp
         /*++
         Routine Description:
 
+        Event handler new button. Navigate to enter new action page
+
+        Arguments:
+
+        sender - sender object of the event
+        e - Event arguments
+
+        --*/
+        void OnNew_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+
+        /*++
+        Routine Description:
+
         Event handler for the hardware and software back request from the system
 
         Arguments:
@@ -139,6 +152,11 @@ namespace MasterDetailApp
         Event registration tokens.
         --*/
         Windows::Foundation::EventRegistrationToken m_backRequestedEventRegistrationToken;
+
+        /*++
+        Page arguments entered while navigated to this page.
+        --*/
+        PageNavigateArgs^ mPageArguments;
 
     };
 }

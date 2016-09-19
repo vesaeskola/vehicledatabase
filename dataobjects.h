@@ -116,6 +116,17 @@ namespace MasterDetailApp
             Platform::String^ get() { return mDescription; }
             void set(Platform::String^ Description) { mDescription = Description; }
         }
+        /*++
+        Property Description:
+
+        Description. Vehicle description entered by end user-
+
+        --*/
+        property Platform::String^ ImagePath
+        {
+            Platform::String^ get() { return mImagePath; }
+            void set(Platform::String^ newImagePath) { mImagePath = newImagePath; }
+        }
 
         /*++
         Property Description:
@@ -149,6 +160,7 @@ namespace MasterDetailApp
         int mYear;
         Platform::String^ mRegPlate;
         Platform::String^ mDescription;
+        Platform::String^ mImagePath;
         int mFuelUnitId;
         int mOdometerUnitId;
     };
@@ -167,6 +179,7 @@ namespace MasterDetailApp
         PageArgsEventsList,           // Last event clicked, action list should show all events
         PageArgsAppLaunched,          // Page is opened immediately after application launch
         PageArgsVehicleEntered,       // New vehicle was entered by user
+        PageArgsVehicleModified,      // Existing vehicle was edited by user
         PageArgsOperationCancelled,   // User click back, and cancelled operation
         PageArgsEditVehicle,          // User want to edit already entered vehicle
         PageArgsEditAction,           // User want to edit already entered action
@@ -205,7 +218,7 @@ namespace MasterDetailApp
         /*++
         Property Description:
 
-        VehicleID. Unique vehicle identifier, primary key of VECHILES table
+        PageArguments. Store page navigate argument.
 
         --*/
         property PageArgs PageArguments
@@ -283,13 +296,13 @@ namespace MasterDetailApp
         /*++
         Property Description:
 
-        Prise. Prise related to event .
+        Price. Price related to event .
 
         --*/
-        property int Prise
+        property int Price
         {
-            int get() { return mPrise; }
-            void set(int Prise) { mPrise = Prise; }
+            int get() { return mPrice; }
+            void set(int Price) { mPrice = Price; }
         }
 
         /*++
@@ -333,7 +346,7 @@ namespace MasterDetailApp
         int mPrimaryKey;
         int mVehicleID;
         int mEventID;
-        int mPrise;
+        int mPrice;
         int mMileage;
         int64 mGlobalDate;
         Platform::String^ mDescription;
@@ -377,7 +390,7 @@ namespace MasterDetailApp
         /*++
         Property Description:
 
-        Amount. Amount of fueling.
+        Amount. Amount of refueling.
 
         --*/
         property int Amount
@@ -401,19 +414,31 @@ namespace MasterDetailApp
         /*++
         Property Description:
 
-        Prise. Total prise of fueling.
+        IsFull. Boolean value describe if full tank refuelling happen.
 
         --*/
-        property int Prise
+        property bool IsFull
         {
-            int get() { return mPrise; }
-            void set(int Prise) { mPrise = Prise; }
+            bool get() { return mIsFull; }
+            void set(bool IsFull) { mIsFull = IsFull; }
         }
 
         /*++
         Property Description:
 
-        Prise. Total prise of fueling.
+        Price. Total price of fueling.
+
+        --*/
+        property int Price
+        {
+            int get() { return mPrice; }
+            void set(int Price) { mPrice = Price; }
+        }
+
+        /*++
+        Property Description:
+
+        Date. Date of the refueling
 
         --*/
         property int64 Date
@@ -439,7 +464,8 @@ namespace MasterDetailApp
         int mVehicleID;
         int mAmount;
         int mMileage;
-        int mPrise;
+        bool mIsFull;
+        int mPrice;
         int64 mGlobalDate;
         Platform::String^ mDescription;
     };
@@ -504,19 +530,19 @@ namespace MasterDetailApp
         /*++
         Property Description:
 
-        Prise. Total prise of fueling.
+        Price. Total price of service.
 
         --*/
-        property int Prise
+        property int Price
         {
-            int get() { return mPrise; }
-            void set(int Prise) { mPrise = Prise; }
+            int get() { return mPrice; }
+            void set(int Price) { mPrice = Price; }
         }
 
         /*++
         Property Description:
 
-        Prise. Total prise of fueling.
+        Date. Date of service.
 
         --*/
         property int64 Date
@@ -542,7 +568,7 @@ namespace MasterDetailApp
         int mVehicleID;
         int mType;
         int mMileage;
-        int mPrise;
+        int mPrice;
         int64 mGlobalDate;
         Platform::String^ mDescription;
 
@@ -572,6 +598,30 @@ namespace MasterDetailApp
         void setActionObject(Platform::Object^ actionObject);
 
         /*++
+        Property Description:
+
+        OdoMeterUnitID. Odometer unit. 
+
+        --*/
+        property int OdoMeterUnitID
+        {
+            int get() { return mOdoMeterUnitID; }
+            void set(int OdoMeterUnitID) { mOdoMeterUnitID = OdoMeterUnitID; }
+        }
+
+        /*++
+        Property Description:
+
+        FuelUnitID. Fuel unit.
+
+        --*/
+        property int FuelUnitID
+        {
+            int get() { return mFuelUnitID; }
+            void set(int FuelUnitID) { mFuelUnitID = FuelUnitID; }
+        }
+
+        /*++
         Routine Description:
 
         getActionObject. Store action object.
@@ -584,6 +634,17 @@ namespace MasterDetailApp
         ServiceInfo^ mServiceInfo;
         FuelingInfo^ mFuelingInfo;
         EventInfo^ mEventInfo;
+
+        /*++
+        Mileageunit of the current vehicle
+        --*/
+        int mOdoMeterUnitID;
+
+        /*++
+        Fuelunit of the current vehicle
+        --*/
+        int mFuelUnitID;
+
 
 
     };

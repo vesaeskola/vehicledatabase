@@ -50,7 +50,7 @@ void ActionInfo::setActionObject(Platform::Object ^ actionObject)
     // Try to cast to known object type, if casting fails the object pointer remain null
     mServiceInfo = dynamic_cast<ServiceInfo^>(actionObject);
     mFuelingInfo = dynamic_cast<FuelingInfo^>(actionObject);
-    mEventInfo = dynamic_cast<EventInfo^>(actionObject);;
+    mEventInfo = dynamic_cast<EventInfo^>(actionObject);
 }
 
 /*++

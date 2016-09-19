@@ -42,6 +42,7 @@ using namespace Windows::UI::Xaml::Interop;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Media::Animation;
 using namespace Windows::UI::Xaml::Navigation;
+using namespace Windows::UI::Xaml::Media::Imaging;
 
 /*++
 Routine Description:
@@ -67,7 +68,7 @@ e - Event data that can be examined by overriding code
 void MasterDetailPage::VehicleInfoEventHandler(VehicleInfo^ vehicle)
 {
     DebugOut("MasterDetailPage::VehicleInfoEventHandler");
-    this->DetailContent6->Text = vehicle->Description;
+    DetailContent6->Text = vehicle->Description;
 
     DatabaseEngine^ database = dynamic_cast<DatabaseEngine^>(gEnginePool->GetEngineObject(L"DatabaseEngine"));
     if (database == nullptr)
@@ -79,38 +80,57 @@ void MasterDetailPage::VehicleInfoEventHandler(VehicleInfo^ vehicle)
     // Read last events:
     EventInfo^ eventInfo = database->ReadLastEventInfoRow(vehicle->VehicleId);
     ServiceInfo^ serviceInfo = database->ReadLastServiceInfoRow(vehicle->VehicleId);
-    FuelingInfo^ fuelingInfo = database->ReadLastFuellingInfoRow(vehicle->VehicleId);
+    FuelingInfo^ fuelingInfo = database->ReadLastFuelingInfoRow(vehicle->VehicleId);
 
     DateTime dateTime1;
     DateTime dateTime2;
     DateTime dateTime3;
 
-    //VehicleInfo->VehicleID = converted > 0 ? vehicleID : 0;
-
     dateTime1.UniversalTime = eventInfo == nullptr ? 0 : eventInfo->Date;
     dateTime2.UniversalTime = serviceInfo == nullptr ? 0 : serviceInfo->Date;
     dateTime3.UniversalTime = fuelingInfo == nullptr ? 0 : fuelingInfo->Date;
 
-    Windows::Globalization::DateTimeFormatting::DateTimeFormatter^ dtf = Windows::Globalization::DateTimeFormatting::DateTimeFormatter::ShortDate::get();
+    Windows::Globalization::DateTimeFormatting::DateTimeFormatter^ dtf = ref new Windows::Globalization::DateTimeFormatting::DateTimeFormatter("month.abbreviated day year");
 
-    String^ _DetailContent6_1 = ref new String;
-    _DetailContent6_1 = L"Event: ";
-    _DetailContent6_1 += dateTime1.UniversalTime != 0 ? dtf->Format(dateTime1) + L" [" + eventInfo->Mileage + L" km]"  : "---";
-    this->DetailContent6_1->Text = _DetailContent6_1;
+    String^ odoMeterUnit = vehicle->OdometerUnitId == 0 ? L" km " : L" mil. ";
 
-    String^ _DetailContent6_2 = ref new String;
-    _DetailContent6_2 = L"Service: ";
-    _DetailContent6_2 += dateTime2.UniversalTime != 0 ? dtf->Format(dateTime2) + L" [" + serviceInfo->Mileage + L" km]" : "---";
-    this->DetailContent6_2->Text = _DetailContent6_2;
+    String^ _DetailContent3_1 = ref new String;
+    _DetailContent3_1 = dateTime1.UniversalTime != 0 ? L"Event: " + dtf->Format(dateTime1) + L" " + eventInfo->Mileage + odoMeterUnit : "---";
+    DetailContent3_1->Text = _DetailContent3_1;
 
-    String^ _DetailContent6_3 = ref new String;
-    _DetailContent6_3 = L"Fueling: ";
-    _DetailContent6_3 += dateTime3.UniversalTime != 0 ? dtf->Format(dateTime3) + L" [" + fuelingInfo->Mileage + L" km]" : "---";
-    this->DetailContent6_3->Text = _DetailContent6_3;
+    String^ _DetailContent3_2 = ref new String;
+    _DetailContent3_2 = dateTime2.UniversalTime != 0 ? L"Service: " + dtf->Format(dateTime2) + L" " + serviceInfo->Mileage + odoMeterUnit : "---";
+    DetailContent3_2->Text = _DetailContent3_2;
 
-    this->go_event_action->Width = eventInfo != nullptr ? 85 : 0;
-    this->go_service_action->Width = serviceInfo != nullptr ? 85 : 0;
-    this->go_fueling_action->Width = fuelingInfo != nullptr ? 85 : 0;
+    String^ _DetailContent3_3 = ref new String;
+    _DetailContent3_3 = dateTime3.UniversalTime != 0 ? L"Refueling: " + dtf->Format(dateTime3) + L" " + fuelingInfo->Mileage + odoMeterUnit : "---";
+    DetailContent3_3->Text = _DetailContent3_3;
+
+    go_event_action->Visibility = eventInfo != nullptr ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+    go_service_action->Visibility = serviceInfo != nullptr ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+    go_fueling_action->Visibility = fuelingInfo != nullptr ? Windows::UI::Xaml::Visibility::Visible : Windows::UI::Xaml::Visibility::Collapsed;
+
+    if (vehicle->ImagePath->Length())
+    {
+        create_task(StorageFile::GetFileFromPathAsync(vehicle->ImagePath)).then([this](task<StorageFile^> t)
+        {
+            auto storageFile = t.get();
+            create_task(storageFile->OpenAsync(Windows::Storage::FileAccessMode::Read)).then([this](IRandomAccessStream^ fileStream)
+            {
+                BitmapImage^ bitmapImage = ref new BitmapImage();
+                bitmapImage->DecodePixelHeight = (int)this->detail_image_narrow->Height;
+                bitmapImage->SetSource(fileStream);
+                detail_image_narrow->Source = bitmapImage;
+            });
+        });
+    }
+    else
+    {
+        String^ path = ref new String(L"Assets/your_vehicle.png");
+        detail_image_narrow->Source = ref new BitmapImage(ref new Windows::Foundation::Uri("ms-appx:///Assets/your_vehicle.png"));
+    }
+
+    mCurrentVehicle = vehicle;
 }
 
 /*++
@@ -121,6 +141,7 @@ Invoked when the Page is loaded and becomes the current source of a parent Frame
 Arguments:
 
 e - Event data that can be examined by overriding code
+TBD: Consider how to handle list view focus handling in different use cases.
 
 --*/
 void MasterDetailPage::OnNavigatedTo(NavigationEventArgs ^ e)
@@ -143,7 +164,9 @@ void MasterDetailPage::OnNavigatedTo(NavigationEventArgs ^ e)
 
     if (args != nullptr)
     {
-        if (args->PageArguments == PageArgs::PageArgsAppLaunched || args->PageArguments == PageArgs::PageArgsVehicleEntered)
+        int selectedIndex = MasterListView->SelectedIndex > 0 ? MasterListView->SelectedIndex : 0;
+
+        if (args->PageArguments == PageArgs::PageArgsAppLaunched || args->PageArguments == PageArgs::PageArgsVehicleEntered || args->PageArguments == PageArgs::PageArgsVehicleModified)
         {
             // Clear previous vchile list view
             vehicleListItems->Clear();
@@ -163,28 +186,39 @@ void MasterDetailPage::OnNavigatedTo(NavigationEventArgs ^ e)
             {
                 MasterListView->SelectedIndex = MasterListView->SelectedIndex < 0 ? 0 : MasterListView->SelectedIndex;
             }
-            NotifyUser("Vehicle list read succesfully", NotifyType::StatusMessage);
         }
         if (args->PageArguments == PageArgs::PageArgsVehicleEntered)
         {
             // If new vehicle was entered, select the latest vehicle
             int Size = dynamic_cast<Vector<VehicleListItem^>^>(MasterListView->ItemsSource)->Size;
             MasterListView->SelectedIndex = Size-1;
+            // Read the detail data of selected vehicle
+            selectedIndex = MasterListView->SelectedIndex > 0 ? MasterListView->SelectedIndex : 0;
         }
-
-        // Read the detail data of selected vehicle
-        int selectedIndex = MasterListView->SelectedIndex > 0 ? MasterListView->SelectedIndex : 0;
+        else if (args->PageArguments == PageArgs::PageArgsVehicleModified)
+        {
+            MasterListView->SelectedIndex = selectedIndex;
+        }
         auto vehicleToRead = vehicleListItems->GetAt(selectedIndex);
 
         // Subscribe vehicle data read events
         EventRegistrationToken token = database->VehicleInfoRead += ref new MasterDetailApp::VehicleInfoHandler(this, &MasterDetailPage::VehicleInfoEventHandler);
 
-        // TBD: Vehicle detail handler (event collector)
         if (database->ReadVehicleData(vehicleToRead->VehicleId) == false)
         {
-            NotifyUser("ReadVehicleData failed", NotifyType::ErrorMessage);
+            NotifyUser("ReadVehicleData failed [code: 1]", NotifyType::ErrorMessage);
         }
 
+        database->VehicleInfoRead -= token;
+    }
+    if (mCurrentVehicle != nullptr)
+    {
+        // Ensure the current vechile data is uptodate
+        EventRegistrationToken token = database->VehicleInfoRead += ref new MasterDetailApp::VehicleInfoHandler(this, &MasterDetailPage::VehicleInfoEventHandler);
+        if (database->ReadVehicleData(mCurrentVehicle->VehicleId) == false)
+        {
+            NotifyUser("ReadVehicleData failed [code: 2]", NotifyType::ErrorMessage);
+        }
         database->VehicleInfoRead -= token;
     }
 
@@ -208,17 +242,18 @@ oldState - Old visual state
 --*/
 void MasterDetailPage::UpdateForVisualState(VisualState ^ newState, VisualState ^ oldState)
 {
-    auto isNarrow = newState == NarrowState;
+    bool isWideState = newState == DefaultState;
 
-    if (isNarrow && oldState == DefaultState && m_lastSelectedItem != nullptr)
+    // If not wide state
+    if (!isWideState && oldState == DefaultState && mCurrentVehicle != nullptr)
     {
-        Frame->Navigate(TypeName(DetailPage::typeid), m_lastSelectedItem, ref new SuppressNavigationTransitionInfo());
+        Frame->Navigate(TypeName(DetailPage::typeid), mCurrentVehicle, ref new SuppressNavigationTransitionInfo());
     }
 
-    EntranceNavigationTransitionInfo::SetIsTargetElement(MasterListView, isNarrow);
+    EntranceNavigationTransitionInfo::SetIsTargetElement(MasterListView, !isWideState);
     if (DetailContentPresenter != nullptr)
     {
-        EntranceNavigationTransitionInfo::SetIsTargetElement(DetailContentPresenter, !isNarrow);
+        EntranceNavigationTransitionInfo::SetIsTargetElement(DetailContentPresenter, isWideState);
     }
 }
 
@@ -262,11 +297,7 @@ e - Event data that can be examined by overriding code
 --*/
 void MasterDetailPage::LayoutRoot_Loaded(Object^ sender, RoutedEventArgs^ e)
 {
-    // Assure we are displaying the correct item. This is necessary in certain adaptive cases.
-    if (m_lastSelectedItem != nullptr)
-    {
-        MasterListView->SelectedItem = m_lastSelectedItem;
-    }
+    // TBD: Assure we are displaying the correct item. This is necessary in certain adaptive cases.
 }
 
 /*++
@@ -335,35 +366,42 @@ e - Event data that can be examined by overriding code
 --*/
 void MasterDetailPage::MasterListView_ItemClick(Object^ sender, ItemClickEventArgs^ e)
 {
-    auto clickedItem = safe_cast<VehicleListItem^>(e->ClickedItem);
+    VehicleListItem^ clickedItem = dynamic_cast<VehicleListItem^>(e->ClickedItem);
 
-    m_lastSelectedItem = clickedItem;
-
-    if (AdaptiveStates->CurrentState == NarrowState)
+    if (clickedItem != nullptr)
     {
-        int a = MasterListView->SelectedIndex;
-
-        // Use "drill in" transition for navigating from master list to detail view
-        Frame->Navigate(TypeName(DetailPage::typeid), clickedItem, ref new DrillInNavigationTransitionInfo());
-    }
-    else
-    {
-        // Read vehicle data into MasterDetailPage vehicle detail pane
-        int vehicleId = clickedItem->VehicleId;
-        DatabaseEngine^ database = dynamic_cast<DatabaseEngine^>(gEnginePool->GetEngineObject(L"DatabaseEngine"));
-
-        // Subscribe vehicle data read events
-        EventRegistrationToken token = database->VehicleInfoRead += ref new MasterDetailApp::VehicleInfoHandler(this, &MasterDetailPage::VehicleInfoEventHandler);
-
-        if (database->ReadVehicleData(vehicleId) == false)
+        // Read the clicked item vehicle data from database, if not already read
+        if (mCurrentVehicle == nullptr || clickedItem->VehicleId != mCurrentVehicle->VehicleId)
         {
-            NotifyUser("ReadVehicleData failed", NotifyType::ErrorMessage);
+            mCurrentVehicle = nullptr;
+
+            // Need to read vechile data into mCurrentVehicle
+            DatabaseEngine^ database = dynamic_cast<DatabaseEngine^>(gEnginePool->GetEngineObject(L"DatabaseEngine"));
+
+            EventRegistrationToken token = database->VehicleInfoRead += ref new MasterDetailApp::VehicleInfoHandler(this, &MasterDetailPage::VehicleInfoEventHandler);
+            if (database->ReadVehicleData(clickedItem->VehicleId) == false)
+            {
+                NotifyUser("ReadVehicleData failed [code: 3]", NotifyType::ErrorMessage);
+            }
+            database->VehicleInfoRead -= token;
         }
 
-        database->VehicleInfoRead -= token;
-
-        // Play a refresh animation when the user switches detail items.
-        EnableContentTransitions();
+        // Check if reading was OK
+        if (mCurrentVehicle != nullptr)
+        {
+            if (AdaptiveStates->CurrentState != DefaultState)
+            {
+                // Narrow or mid state, Navigate to detail page to show detail information
+                // Use "drill in" transition for navigating from master list to detail view
+                Frame->Navigate(TypeName(DetailPage::typeid), mCurrentVehicle, ref new DrillInNavigationTransitionInfo());
+            }
+            else
+            {
+                // Detail information is already in this page
+                // Play a refresh animation when the user switches detail items.
+                EnableContentTransitions();
+            }
+        }
     }
 }
 
@@ -513,13 +551,13 @@ e - Event arguments
 void MasterDetailPage::OnNewVehicle_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
 {
     PageNavigateArgs^ args = ref new PageNavigateArgs(-1, PageArgs::PageArgsNone, nullptr);
-    this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewVehiclePage::typeid), args);
+    Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewVehiclePage::typeid), args);
 }
 
 /*++
 Routine Description:
 
-Event handler for menu panel. Open new fuelling page.
+Event handler for menu panel. Open new fueling page.
 
 Arguments:
 
@@ -527,12 +565,12 @@ sender - sender object of the event
 e - Event arguments
 
 --*/
-void MasterDetailPage::OnFuelling_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
+void MasterDetailPage::OnFueling_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
 {
-    if (m_lastSelectedItem != nullptr)
+    if (mCurrentVehicle != nullptr)
     {
-        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsNone, nullptr);
-        this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewFuellingPage::typeid), args);
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsNone, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewFuelingPage::typeid), args);
     }
 }
 
@@ -549,10 +587,10 @@ e - Event arguments
 --*/
 void MasterDetailPage::OnService_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    if (m_lastSelectedItem != nullptr)
+    if (mCurrentVehicle != nullptr)
     {
-        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsNone, nullptr);
-        this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewServicePage::typeid), args);
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsNone, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewServicePage::typeid), args);
     }
 }
 
@@ -569,10 +607,10 @@ e - Event arguments
 --*/
 void MasterDetailPage::OnEvent_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    if (m_lastSelectedItem != nullptr)
+    if (mCurrentVehicle != nullptr)
     {
-        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsNone, nullptr);
-        this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewEventPage::typeid), args);
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsNone, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewEventPage::typeid), args);
     }
 }
 
@@ -589,20 +627,33 @@ e - Event arguments
 --*/
 void MasterDetailPage::OnTest_Click(Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
-    if (m_lastSelectedItem != nullptr)
-    {
-        int vehicleID = m_lastSelectedItem->VehicleId;
-        DatabaseEngine^ database = dynamic_cast<DatabaseEngine^>(gEnginePool->GetEngineObject(L"DatabaseEngine"));
+}
 
-        if (database->ReadAllEvents(vehicleID) == false)
-        {
-            NotifyUser("Events reading failed", NotifyType::ErrorMessage );
-        }
-        else
-        {
-            NotifyUser("All events read succesfully", NotifyType::StatusMessage);
-        }
+/*++
+Routine Description:
+
+Event handler of the button. Read and open page for all events of selected vehicle.
+
+Arguments:
+
+sender - sender object of the event
+e - Event arguments
+
+--*/
+void MasterDetailPage::OnEditVehicle_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
+{
+    if (mCurrentVehicle != nullptr)
+    {
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsEditVehicle, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewVehiclePage::typeid), args);
     }
+    /*
+    else if (m_lastSelectedItem != nullptr)
+    {
+        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsEditVehicle, nullptr);
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewVehiclePage::typeid), args);
+    }
+    */
 }
 
 /*++
@@ -618,21 +669,14 @@ e - Event arguments
 --*/
 void MasterDetailPage::OnLastEvent_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
 {
-    if (m_lastSelectedItem != nullptr)
+    if (mCurrentVehicle != nullptr)
     {
-        // TBD: Here we need much more intelligent method to deliver basic vehicle data between pages
-        VehicleInfo^ currentVehicle = ref new VehicleInfo;
-        currentVehicle->Make = m_lastSelectedItem->Make;
-        currentVehicle->Model = m_lastSelectedItem->Model;
-        currentVehicle->RegPlate = m_lastSelectedItem->RegPlate;
-        currentVehicle->VinCode = m_lastSelectedItem->VinCode;
-
-        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsEventsList, safe_cast<Platform::Object^>(currentVehicle));
-        this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(EventListPage::typeid), args);
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsEventsList, safe_cast<Platform::Object^>(mCurrentVehicle));
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(EventListPage::typeid), args);
     }
     else
     {
-        NotifyUser("Select vehicle to open event list", NotifyType::ErrorMessage);
+        NotifyUser("Select vehicle to open event list, [code: 4]", NotifyType::ErrorMessage);
     }
 }
 
@@ -649,17 +693,10 @@ e - Event arguments
 --*/
 void MasterDetailPage::OnLastService_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
 {
-    if (m_lastSelectedItem != nullptr)
+    if (mCurrentVehicle != nullptr)
     {
-        // TBD: Here we need much more intelligent method to deliver basic vehicle data between pages
-        VehicleInfo^ currentVehicle = ref new VehicleInfo;
-        currentVehicle->Make = m_lastSelectedItem->Make;
-        currentVehicle->Model = m_lastSelectedItem->Model;
-        currentVehicle->RegPlate = m_lastSelectedItem->RegPlate;
-        currentVehicle->VinCode = m_lastSelectedItem->VinCode;
-
-        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsServiceList, safe_cast<Platform::Object^>(currentVehicle));
-        this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(EventListPage::typeid), args);
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsServiceList, safe_cast<Platform::Object^>(mCurrentVehicle));
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(EventListPage::typeid), args);
     }
     else
     {
@@ -680,21 +717,14 @@ e - Event arguments
 --*/
 void MasterDetailPage::OnLastFueling_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
 {
-    if (m_lastSelectedItem != nullptr)
+    if (mCurrentVehicle != nullptr)
     {
-        // TBD: Here we need much more intelligent method to deliver basic vehicle data between pages
-        VehicleInfo^ currentVehicle = ref new VehicleInfo;
-        currentVehicle->Make = m_lastSelectedItem->Make;
-        currentVehicle->Model = m_lastSelectedItem->Model;
-        currentVehicle->RegPlate = m_lastSelectedItem->RegPlate;
-        currentVehicle->VinCode = m_lastSelectedItem->VinCode;
-
-        PageNavigateArgs^ args = ref new PageNavigateArgs(m_lastSelectedItem->VehicleId, PageArgs::PageArgsFuelingList, safe_cast<Platform::Object^>(currentVehicle));
-        this->Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(EventListPage::typeid), args);
+        PageNavigateArgs^ args = ref new PageNavigateArgs(mCurrentVehicle->VehicleId, PageArgs::PageArgsFuelingList, safe_cast<Platform::Object^>(mCurrentVehicle));
+        Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(EventListPage::typeid), args);
     }
     else
     {
-        NotifyUser("Select vehicle to open fueling list", NotifyType::ErrorMessage);
+        NotifyUser("Select vehicle to open refueling list, [code: 5]", NotifyType::ErrorMessage);
     }
 }
 
@@ -725,23 +755,13 @@ void MasterDetailPage::OnImportDatabase_Click(Object^ sender, Windows::UI::Xaml:
             // with the one user has select
             DatabaseEngine^ database = dynamic_cast<DatabaseEngine^>(gEnginePool->GetEngineObject(L"DatabaseEngine"));
 
-            database->Close();
+            database->CloseDatabase();
 
             create_task(file->CopyAsync(ApplicationData::Current->LocalFolder, "vehicle_data.db", NameCollisionOption::ReplaceExisting)).then([this](StorageFile^ newFile)
             {
                 NotifyUser("Import db clicked: Database file copied succesfully to documents folder\nThis feature is not yet implemented, this file can't be opened", NotifyType::StatusMessage);
 
                 String^ dbFilePath = newFile->Path;
-                /*
-                if (OpenExistingDatabase(dbFilePath) == false)
-                {
-                    NotifyUser("Can't open vehicle database", NotifyType::ErrorMessage);
-                }
-                else
-                {
-                    NotifyUser("Vehicle database copied app local folder and opened succesfully", NotifyType::StatusMessage);
-                }
-                */
             });
         }
     });
@@ -750,7 +770,7 @@ void MasterDetailPage::OnImportDatabase_Click(Object^ sender, Windows::UI::Xaml:
 /*++
 Routine Description:
 
-Event handler for menu panel. Not implemented.
+Event handler for the button. Not implemented.
 
 Arguments:
 
@@ -764,12 +784,86 @@ void MasterDetailPage::OnExportDatabase_Click(Object^ sender, Windows::UI::Xaml:
 }
 
 
+/*++
+Routine Description:
 
+Event handler for list view control. Does nothing
+
+Arguments:
+
+sender - sender object of the event
+e - Event arguments
+
+--*/
 void MasterDetailPage::MasterListView_ItemSelected(Platform::Object^ sender, Windows::UI::Xaml::Controls::SelectionChangedEventArgs^ e)
 {
     DebugOut("MasterDetailPage: item selected");
 
     auto item = MasterListView->SelectedItem;
     auto index = MasterListView->SelectedIndex;
-
 }
+
+/*++
+Routine Description:
+
+Event handler for vehicle image tapping. Select a new image for the vehicle.
+
+Arguments:
+
+sender - sender object of this event
+e - Event data that can be examined by overriding code
+
+--*/
+void MasterDetailPage::OnSelectVehicleImage(Platform::Object^ sender, Windows::UI::Xaml::Input::TappedRoutedEventArgs^ e)
+{
+    FileOpenPicker^ openPicker = ref new FileOpenPicker();
+    openPicker->ViewMode = PickerViewMode::Thumbnail;
+    openPicker->SuggestedStartLocation = PickerLocationId::PicturesLibrary;
+    openPicker->FileTypeFilter->Append(".jpg");
+    openPicker->FileTypeFilter->Append(".png");
+
+    create_task(openPicker->PickSingleFileAsync()).then([this](StorageFile^ file)
+    {
+        if (file != nullptr)
+        {
+            create_task(file->CopyAsync(ApplicationData::Current->LocalFolder, file->Name, NameCollisionOption::ReplaceExisting)).then([this](StorageFile^ newFile)
+            {
+                String^ path = newFile->Path;
+                this->SetVehicleImage(newFile);
+                DatabaseEngine^ database = dynamic_cast<DatabaseEngine^>(gEnginePool->GetEngineObject(L"DatabaseEngine"));
+                if (database != nullptr && mCurrentVehicle != nullptr)
+                {
+                    database->updateVehicleImagePath(mCurrentVehicle->VehicleId, newFile->Path);
+                }
+
+            });
+        }
+    });
+}
+
+/*++
+Routine Description:
+
+Open and set the given file into vehicle image of the page
+
+Arguments:
+
+file - The file to be load
+
+--*/
+void MasterDetailPage::SetVehicleImage(StorageFile^ file)
+{
+    Platform::String^ filePath = file->Path;
+
+    // Ensure the stream is disposed once the image is loaded
+    create_task(file->OpenAsync(Windows::Storage::FileAccessMode::Read)).then([this](IRandomAccessStream^ fileStream)
+    {
+        // Set the image source to the selected bitmap
+        BitmapImage^ bitmapImage = ref new BitmapImage();
+        bitmapImage->DecodePixelHeight = (int)300;
+        //bitmapImage->DecodePixelHeight = this->detail_image_narrow->Height;
+        bitmapImage->SetSource(fileStream);
+        detail_image_narrow->Source = bitmapImage;
+    });
+}
+

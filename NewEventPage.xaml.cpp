@@ -8,7 +8,7 @@ Abstract:
 
 This module implement NewEventPage class. NewEventPage implement user interface to enter and edit vehicle event.
 Event could be mileage, accesory purchase, trip, memo or other kind of note. Event contain date, mileage value,
-prise and general description.
+price and general description.
 
 Environment:
 
@@ -87,16 +87,12 @@ void NewEventPage::OnNavigatedTo(NavigationEventArgs ^ e)
                     // Here we use C++11 to convert integer to wchar*
                     std::wstring wideString = std::to_wstring(eventInfo->Mileage);
                     textBox_odometer->Text = ref new String(wideString.c_str());
-
-                    wideString = std::to_wstring(eventInfo->Prise);
-                    textBox_price->Text = ref new String(wideString.c_str());
-
+                    textBox_price->Text = IntToPlatformString(eventInfo->Price);
                     textBox_description->Text = eventInfo->Description;
 
                     DateTime dateTime;
                     dateTime.UniversalTime = eventInfo->Date;
                     date_picker->Date = dateTime;
-
 
                     int eventType = eventInfo->EventID;
                     if (eventType == 0x01) RadioButton_odometer->IsChecked = true;
@@ -171,25 +167,28 @@ void NewEventPage::OnDone_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventA
 {
     if (gDatabase != nullptr)
     {
+        EventInfo^ eventInfo = PopulateEventInfoObject();
         if (mPrimaryKey != 0)
         {
             // Update existing event
-            EventInfo^ eventInfo = PopulateEventInfoObject();
             if (gDatabase->updateEventInfo(mPrimaryKey, eventInfo) == false)
             {
                 // TBD: Open error dialog from here
                 DebugOut("NewEventPage::OnDone_Click: updateEventInfo failed");
             }
         }
-        else if (mVehicleID != -1)
+        else if (mVehicleID > 0)
         {
             // Create a new event
-            EventInfo^ eventInfo = PopulateEventInfoObject();
             if (gDatabase->addEventInfo(eventInfo) == false)
             {
                 // TBD: Open error dialog from here
                 DebugOut("NewEventPage::OnDone_Click: addEventInfo failed");
             }
+        }
+        else
+        {
+            DebugOut("NewEventPage::OnDone_Click: System error, vechileID not available");
         }
     }
 
@@ -228,23 +227,27 @@ EventInfo^ NewEventPage::PopulateEventInfoObject()
 {
     EventInfo^ eventInfo = ref new EventInfo();
 
+    // 'VehicleID'
+    eventInfo->VehicleID = mVehicleID;
+
     if (textBox_price->Text->Length())
     {
-        eventInfo->Prise = _wtoi(textBox_price->Text->Data());
+        eventInfo->Price = PlatformStringToInt(textBox_price->Text);
     }
     if (textBox_odometer->Text->Length())
     {
         eventInfo->Mileage = _wtoi(textBox_odometer->Text->Data());
     }
     int eventType = 0;
-    eventType |= (this->RadioButton_odometer->IsChecked->Value == true) ? 0x01 : 0x00;
-    eventType |= (this->RadioButton_accessory->IsChecked->Value == true) ? 0x02 : 0x00;
-    eventType |= (this->RadioButton_trip->IsChecked->Value == true) ? 0x03 : 0x00;
-    eventType |= (this->RadioButton_memo->IsChecked->Value == true) ? 0x04 : 0x00;
-    eventType |= (this->RadioButton_other->IsChecked->Value == true) ? 0x05 : 0x00;
+
+    if (RadioButton_odometer->IsChecked->Value == true) eventType = 1;
+    else if (RadioButton_accessory->IsChecked->Value == true) eventType = 2;
+    else if (RadioButton_trip->IsChecked->Value == true) eventType = 3;
+    else if (RadioButton_memo->IsChecked->Value == true) eventType = 4;
+    else if (RadioButton_other->IsChecked->Value == true) eventType = 5;
     eventInfo->EventID = eventType;
 
-    DateTime dateTime = this->date_picker->Date;
+    DateTime dateTime = date_picker->Date;
     int64 globalDate = dateTime.UniversalTime;
     eventInfo->Date = globalDate;
 

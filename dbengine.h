@@ -176,7 +176,7 @@ namespace MasterDetailApp
         Close database
 
         --*/
-        void Close ();
+        void CloseDatabase ();
 
         /*++
         Routine Description:
@@ -218,7 +218,7 @@ namespace MasterDetailApp
         Return Value: FuelingInfo^. Fueling info object, nullptr if not succeeded
 
         --*/
-        FuelingInfo^ ReadLastFuellingInfoRow(int vehicleId);
+        FuelingInfo^ ReadLastFuelingInfoRow(int vehicleId);
 
         /*++
         Routine Description:
@@ -336,15 +336,29 @@ namespace MasterDetailApp
         /*++
         Routine Description:
 
-        Add fuelling event of the existing vehicle
+        Update the existing vehicle information in sql database
 
         Arguments:
 
-        fuellingInfo - Fueling data entered by end user
+        vehicleId - Index of vehicle, VECHILES table VehicleID columnn
+        newImagePath - Path of new image
 
         Return Value: bool. if succeeded true.
         --*/
-        bool addFuellingInfo(FuelingInfo^ fuellingInfo);
+        bool updateVehicleImagePath(int vehicleId, Platform::String^ newImagePath);
+
+        /*++
+        Routine Description:
+
+        Add fueling event of the existing vehicle
+
+        Arguments:
+
+        fuelingInfo - Fueling data entered by end user
+
+        Return Value: bool. if succeeded true.
+        --*/
+        bool addFuelingInfo(FuelingInfo^ fuelingInfo);
 
         /*++
         Routine Description:

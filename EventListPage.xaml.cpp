@@ -86,6 +86,8 @@ void EventListPage::OnNavigatedTo(NavigationEventArgs ^ e)
         // Set event sink to catch read rows from database
         Windows::Foundation::EventRegistrationToken cookie = database->ActionInfoRead += ref new MasterDetailApp::ActionInfoHandler(actionListCollector, &ActionListItemCollector::ActionInfoEventHandler);
 
+        actionListItems->Clear();
+
         VehicleInfo^ vehicleInfo = dynamic_cast<VehicleInfo^>(args->Object);
         if (vehicleInfo != nullptr)
         {
@@ -93,8 +95,12 @@ void EventListPage::OnNavigatedTo(NavigationEventArgs ^ e)
             model->Text = vehicleInfo->Model;
             regplate->Text = vehicleInfo->RegPlate;
             vincode->Text = vehicleInfo->VinCode;
+
+            actionListCollector->SetOdometerUnit(vehicleInfo->OdometerUnitId);
+            actionListCollector->SetFuelUnit(vehicleInfo->FuelUnitId);
         }
-        actionListItems->Clear();
+
+        mPageArguments = args;
 
         switch (args->PageArguments)
         {
@@ -122,7 +128,7 @@ void EventListPage::OnNavigatedTo(NavigationEventArgs ^ e)
                 {
                     DebugOut("EventListPage::OnNavigatedTo: ReadAllFuelings failed");
                 }
-                title->Text = L"Fuelings";
+                title->Text = L"Refuelings";
                 break;
             }
             default:
@@ -162,6 +168,8 @@ e - Event data that can be examined by overriding code
 void EventListPage::OnNavigatedFrom(NavigationEventArgs ^ e)
 {
     Page::OnNavigatedFrom(e);
+
+    PageNavigateArgs^ args = dynamic_cast<PageNavigateArgs^>(e->Parameter);
 
     SystemNavigationManager^ systemNavigationManager = SystemNavigationManager::GetForCurrentView();
     systemNavigationManager->BackRequested -= m_backRequestedEventRegistrationToken;
@@ -246,7 +254,7 @@ void EventListPage::EventListView_EventItemClick(Object^ sender, ItemClickEventA
             else if (dynamic_cast<FuelingInfo^>(object) != nullptr)
             {
                 PageNavigateArgs^ args = ref new PageNavigateArgs(-1, PageArgs::PageArgsEditAction, safe_cast<Platform::Object^>(actionInfo));
-                Frame->Navigate(::Interop::TypeName(NewFuellingPage::typeid), args);
+                Frame->Navigate(::Interop::TypeName(NewFuelingPage::typeid), args);
             }
             else if (dynamic_cast<EventInfo^>(object) != nullptr)
             {
@@ -276,10 +284,52 @@ void EventListPage::OnBack_Click(Object ^ sender, Windows::UI::Xaml::RoutedEvent
 /*++
 Routine Description:
 
-Event handler for the hardware and software back request from the system
+Event handler new button. Navigate to enter new action page
 
 Arguments:
 
+sender - sender object of the event
+e - Event arguments
+
+--*/
+void EventListPage::OnNew_Click(Object ^ sender, Windows::UI::Xaml::RoutedEventArgs ^ e)
+{
+    switch (mPageArguments->PageArguments)
+    {
+        case PageArgs::PageArgsEventsList:
+        {
+            PageNavigateArgs^ args = ref new PageNavigateArgs(mPageArguments->VehicleID, PageArgs::PageArgsNone, nullptr);
+            Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewEventPage::typeid), args);
+            break;
+        }
+        case PageArgs::PageArgsServiceList:
+        {
+            PageNavigateArgs^ args = ref new PageNavigateArgs(mPageArguments->VehicleID, PageArgs::PageArgsNone, nullptr);
+            Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewServicePage::typeid), args);
+            break;
+        }
+        case PageArgs::PageArgsFuelingList:
+        {
+            PageNavigateArgs^ args = ref new PageNavigateArgs(mPageArguments->VehicleID, PageArgs::PageArgsNone, nullptr);
+            Frame->Navigate(Windows::UI::Xaml::Interop::TypeName(NewFuelingPage::typeid), args);
+            break;
+        }
+        default:
+        {
+            Frame->GoBack(ref new DrillInNavigationTransitionInfo());
+            break;
+        }
+    }
+}
+
+/*++
+Routine Description:
+
+Event handler for hardware and software back button. Navigate to back to previous page.
+
+Arguments:
+
+sender - sender object of the event
 e - Event arguments
 
 --*/

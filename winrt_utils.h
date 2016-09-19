@@ -84,5 +84,30 @@ namespace MasterDetailApp
     --*/
     void ShowMessageDialogAsync(_In_ Platform::String^ message);
 
+    /*++
+    Routine Description:
+
+    Let user to pick image file, copy it to app storage folder
+
+    Return Value: StorageFile^. StorageFile pointing to copied image file.
+    --*/
+    Windows::Storage::StorageFile^ PickImage();
+
+    /*++
+    Routine Description:
+
+    Convert integer value to Plaform string using roundation rules (100 51 -> "100.51")
+    Return Value: String^. String containing the converted value
+    --*/
+    Platform::String^ IntToPlatformString(int value);
+
+    /*++
+    Routine Description:
+
+    Convert Plaform string to integer using roundation rules ("100.5562" -> "100.56")
+    Return Value: int. Integer containing the converted value
+    --*/
+    int PlatformStringToInt(Platform::String^ Value);
+
 }
 

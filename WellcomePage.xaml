@@ -7,63 +7,78 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
-        <Grid.Background>
-            <ImageBrush Stretch="Fill" ImageSource="Assets/SplashScreen.scale-200.png" Opacity="0.2"/>
-        </Grid.Background>
-
-        <Grid.RowDefinitions>
-            <RowDefinition x:Name="TitlePane1" Height="Auto" />
-            <RowDefinition x:Name="ContentPane" Height="Auto" />
-        </Grid.RowDefinitions>
-
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveStates">
+                <!-- Width: 1300... pix -->
                 <VisualState x:Name="DefaultState">
                     <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="721" />
+                        <AdaptiveTrigger MinWindowWidth="1300" />
                     </VisualState.StateTriggers>
                 </VisualState>
 
+                <!-- Width: 721...1300 pix -->
+                <VisualState x:Name="MidState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="721" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeaderPanel.Margin" Value="20,0,400,0" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <!-- Width: 0....720 pix -->
                 <VisualState x:Name="NarrowState">
                     <VisualState.StateTriggers>
                         <AdaptiveTrigger MinWindowWidth="0" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <!--                        <Setter Target="go_back.Width" Value="85"  /> -->
+                        <Setter Target="HeaderPanel.Margin" Value="20,0,0,0" />
+                        <Setter Target="background.ImageSource" Value="Assets/logo_narrow.png" />
+                        <Setter Target="text1.FontSize" Value="24" />
+                        <Setter Target="text2.FontSize" Value="18" />
+                        <Setter Target="text3.FontSize" Value="18" />
+                        <Setter Target="go_app.Margin" Value="0,240,0,0" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateManager.VisualStateGroups>
 
-        <StackPanel x:Name="HeaderPanel" Grid.Row="0"  Margin="10,0,0,0">
-            <TextBlock TextWrapping="Wrap" Text="Vehicles Database" HorizontalAlignment="Center"  Margin="0,100,0,10" VerticalAlignment="Top" FontFamily="Arial" FontSize="20" Width="Auto" Canvas.ZIndex="1">
-                <TextBlock.Foreground>
-                    <SolidColorBrush Color="{ThemeResource SystemBaseHighColor}"/>
-                </TextBlock.Foreground>
-            </TextBlock>
-            <TextBlock Margin="8,10,8,10" Text="Wellcome to vehicles database. Maintain all information of you vehicles, cars, motorcycles or even lawn mower. Keep track of services and follow other costs and events." VerticalAlignment="Top" Width="Auto" TextWrapping="Wrap" FontFamily="Arial" FontSize="16" Canvas.ZIndex="1">
-                <TextBlock.Foreground>
-                    <SolidColorBrush Color="{ThemeResource SystemBaseHighColor}"/>
-                </TextBlock.Foreground>
-            </TextBlock>
-            <TextBlock Margin="8,10,8,100" Text="It seems your database does not yet contain any vehicle information. Let's get started by entering information of your first vehicle. Click Continue to proceed." VerticalAlignment="Top" Width="Auto" TextWrapping="Wrap" FontFamily="Arial" FontSize="16" Canvas.ZIndex="1">
-                <TextBlock.Foreground>
-                    <SolidColorBrush Color="{ThemeResource SystemBaseHighColor}"/>
-                </TextBlock.Foreground>
-            </TextBlock>
-        </StackPanel>
+        <Grid>
+            <Grid.Background>
+                <ImageBrush x:Name="background" ImageSource="Assets/logo_wide.png" Opacity="0.2"/>
+            </Grid.Background>
 
-        <!-- TitlePane2 -->
-        <Button x:Name="go_main_page" Grid.Row="1" Margin="10,0,0,0" HorizontalAlignment="Center" Width="190" Height="40" Click="OnGoNewVehiclePage_Click">
-            <Button.Background>
-                <ImageBrush ImageSource="Assets/button_base.png"/>
-            </Button.Background>
-            <Button.Content>
-                <TextBlock x:Name="go_back_text" Text="Continue" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
-            </Button.Content>
-        </Button>
+            <Grid.RowDefinitions>
+                <RowDefinition x:Name="ContentPane" Height="Auto" />
+            </Grid.RowDefinitions>
 
+            <StackPanel x:Name="HeaderPanel" Grid.Row="0" Margin="20,0,600,0">
+                <TextBlock x:Name="text1" TextWrapping="Wrap" Text="Vehicles Database" HorizontalAlignment="Center"  Margin="10,20,92,10" VerticalAlignment="Top" FontFamily="Arial" FontSize="48" Width="Auto" Canvas.ZIndex="1">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Color="{ThemeResource SystemBaseHighColor}"/>
+                    </TextBlock.Foreground>
+                </TextBlock>
+                <TextBlock x:Name="text2" Margin="0,10,0,10" Text="Wellcome to vehicles database. Maintain all information of you vehicles, cars, motorcycles or even lawn mower. Keep track of services and follow other costs and events." HorizontalAlignment="Left"  Width="Auto" TextWrapping="Wrap" FontFamily="Arial" FontSize="32" Canvas.ZIndex="1">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Color="{ThemeResource SystemBaseHighColor}"/>
+                    </TextBlock.Foreground>
+                </TextBlock>
+                <TextBlock x:Name="text3" Margin="0,10,0,0" Text="It seems your database does not yet contain any vehicle information. Let's get started by entering information of your first vehicle. Click Continue to proceed." HorizontalAlignment="Left" Width="Auto" TextWrapping="Wrap" FontFamily="Arial" FontSize="32" Canvas.ZIndex="1">
+                    <TextBlock.Foreground>
+                        <SolidColorBrush Color="{ThemeResource SystemBaseHighColor}"/>
+                    </TextBlock.Foreground>
+                </TextBlock>
+            <Button x:Name="go_app" Grid.Row="1" Margin="0,40,0,0" HorizontalAlignment="Right" Width="190" Height="40" Click="OnGoNewVehiclePage_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="Assets/button_base.png"/>
+                </Button.Background>
+                <Button.Content>
+                    <TextBlock x:Name="go_app_text" Text="Continue" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                </Button.Content>
+            </Button>
+            </StackPanel>
 
-    </Grid>
+        </Grid>
+    </ScrollViewer>
 </Page>

@@ -20,8 +20,8 @@ Copyright © 2016 Vesa Eskola. All rights reserved.
 using namespace Platform;
 using namespace Windows::UI::Popups;
 using namespace concurrency;
-
-#include "MasterDetailPage.xaml.h"
+using namespace Windows::Storage;
+using namespace Windows::Storage::Pickers;
 
 /*++
 Routine Description:
@@ -136,4 +136,62 @@ void MasterDetailApp::ShowMessageDialogAsync (_In_ String^ message)
     });
 }
 
+/*++
+Routine Description:
 
+Let user to pick image file, copy it to app storage folder
+
+Return Value: StorageFile^. StorageFile pointing to copied image file.
+--*/
+StorageFile^ MasterDetailApp::PickImage()
+{
+    FileOpenPicker^ openPicker = ref new FileOpenPicker();
+    openPicker->ViewMode = PickerViewMode::Thumbnail;
+    openPicker->SuggestedStartLocation = PickerLocationId::PicturesLibrary;
+    openPicker->FileTypeFilter->Append(".jpg");
+    openPicker->FileTypeFilter->Append(".png");
+    //openPicker->FileTypeFilter->Append(".sqlite");
+
+    create_task(openPicker->PickSingleFileAsync()).then([](StorageFile^ file)
+    {
+        if (file != nullptr)
+        {
+            create_task(file->CopyAsync(ApplicationData::Current->LocalFolder, file->Name, NameCollisionOption::ReplaceExisting)).then([](StorageFile^ newFile)
+            {
+                String^ dbFilePath = newFile->Path;
+                return newFile;
+            });
+        }
+    });
+    return nullptr;
+}
+
+/*++
+Routine Description:
+
+Convert integer value to Plaform string using roundation rules (100 51 -> "100.51")
+Return Value: String^. String containing the converted value
+--*/
+Platform::String^ MasterDetailApp::IntToPlatformString (int value)
+{
+    std::wstring wideString = std::to_wstring(value / (float)100.0);
+    std::replace(wideString.begin(), wideString.end(), ',', '.');
+    wideString.erase(wideString.find_last_of('.') + 3, std::string::npos);
+
+    return ref new Platform::String(wideString.c_str());
+}
+
+/*++
+Routine Description:
+
+Convert Plaform string to integer using roundation rules ("100.5562" -> "100.56")
+Return Value: int. Integer containing the converted value
+--*/
+int MasterDetailApp::PlatformStringToInt(Platform::String^ Value)
+{
+    // Conversion from text -> float -> 100 x int
+    std::wstring wideString = Value->Data();
+    std::replace(wideString.begin(), wideString.end(), ',', '.');
+    float famount = wcstof(wideString.c_str(), NULL);
+    return (int)((famount + 0.005) * 100.0);
+}

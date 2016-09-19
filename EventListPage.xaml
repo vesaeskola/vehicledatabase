@@ -17,36 +17,26 @@
     </Page.Transitions>
 
     <Page.Resources>
-        <DataTemplate x:Key="MasterListViewEventItemTemplate" x:DataType="viewmodels:ActionListItem">
+        <DataTemplate x:Key="EventListItemTemplate" x:DataType="viewmodels:ActionListItem">
             <Grid Margin="0,0,0,0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200" MaxWidth="300" MinWidth="200" />
+                    <ColumnDefinition Width="70" MinWidth="70" />
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBlock
-                    Text="{x:Bind Column1}"
-                    Grid.Column="0"
-                    MaxLines="1"
-                    Margin="0,0,10,0"
-                    Style="{ThemeResource ListBodyTextBlockStyle}" />
-                <TextBlock
-                    Text="{x:Bind Column2}"
-                    Grid.Column="1"
-                    MaxLines="1"
-                    Margin="0,0,10,0"
-                    Style="{ThemeResource ListBodyTextBlockStyle}" />
-                <TextBlock
-                    Text="{x:Bind Row2}"
-                    Grid.Row="1"
-                    MaxLines="1"
-                    Margin="0,0,10,0"
-                    Style="{ThemeResource ListBodyTextBlockStyle}" />
+                <!-- Column 1 -->
+                <Image Height ="48"  Source="{x:Bind IconSrc}" />
+
+                <!-- Column 2 -->
+                <StackPanel Grid.Column="1" Margin="10,0,10,0">
+                    <TextBlock Text="{x:Bind Row1}" MaxLines="1" Style="{ThemeResource ListBodyTextBlockStyle}" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <TextBlock Text="{x:Bind Row2_1}"  MaxLines="1" Style="{ThemeResource ListBodyTextBlockStyle}" />
+                        <TextBlock Text="{x:Bind Row2_2}"  Margin="20,0" MaxLines="1" Style="{ThemeResource ListBodyTextBlockStyle}" />
+                    </StackPanel>
+                </StackPanel>
+
             </Grid>
         </DataTemplate>
     </Page.Resources>
@@ -67,11 +57,14 @@
                         <Setter Target="go_back.Width" Value="85"  />
                         <Setter Target="go_back.Height" Value="20" />
                         <Setter Target="go_back_text.FontSize" Value="12" />
-                        <Setter Target="make.FontSize" Value="12" />
-                        <Setter Target="model.FontSize" Value="12" />
-                        <Setter Target="regplate.FontSize" Value="12" />
-                        <Setter Target="vincode.FontSize" Value="12" />
-                        <Setter Target="title.FontSize" Value="20" />
+                        <Setter Target="go_new.Width" Value="85"  />
+                        <Setter Target="go_new.Height" Value="20" />
+                        <Setter Target="go_new_text.FontSize" Value="12" />
+                        <Setter Target="make.FontSize" Value="20" />
+                        <Setter Target="model.FontSize" Value="20" />
+                        <Setter Target="regplate.FontSize" Value="20" />
+                        <Setter Target="vincode.FontSize" Value="16" />
+                        <Setter Target="title.FontSize" Value="28" />
                         <Setter Target="title.Height" Value="Auto" />
                     </VisualState.Setters>
                 </VisualState>
@@ -88,9 +81,9 @@
 
             <StackPanel x:Name="DetailContent1" Grid.Row="0" Margin="2,2,2,2" Background="{ThemeResource AppBarBorderThemeBrush}">
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock x:Name="make" Margin="6,0" FontSize="16" Style="{ThemeResource  SubtitleTextBlockStyle}" HorizontalAlignment="Left" Text="Make" FontWeight="Bold" />
-                    <TextBlock x:Name="model" Margin="10,0" FontSize="16" HorizontalAlignment="Left" Style="{ThemeResource SubtitleTextBlockStyle}" Text="Model" FontWeight="Bold" />
-                    <TextBlock x:Name="regplate" Margin="10,0" FontSize="16" HorizontalAlignment="Left" Style="{ThemeResource SubtitleTextBlockStyle}" Text="RegPlate" FontWeight="Bold" />
+                    <TextBlock x:Name="make" Margin="6,0" FontSize="32" Style="{ThemeResource  SubtitleTextBlockStyle}" HorizontalAlignment="Left" Text="Make" FontWeight="Bold" />
+                    <TextBlock x:Name="model" Margin="10,0" FontSize="32" HorizontalAlignment="Left" Style="{ThemeResource SubtitleTextBlockStyle}" Text="Model" FontWeight="Bold" />
+                    <TextBlock x:Name="regplate" Margin="10,0" FontSize="32" HorizontalAlignment="Left" Style="{ThemeResource SubtitleTextBlockStyle}" Text="RegPlate" FontWeight="Bold" />
                 </StackPanel>
                 <TextBlock x:Name="vincode" Text="VinCode" Margin="10,0" FontSize="16" HorizontalAlignment="Left" Style="{ThemeResource SubtitleTextBlockStyle}"  />
                 <Grid>
@@ -102,7 +95,16 @@
                                 </LinearGradientBrush>
                             </TextBlock.Foreground>
                         </TextBlock>
-                        <Button x:Name="go_back" Width="190"  Height="40" HorizontalAlignment="Right" Click="OnBack_Click">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button x:Name="go_new" Width="190"  Height="40"  Click="OnNew_Click">
+                        <Button.Background>
+                            <ImageBrush ImageSource="Assets/button_base.png"/>
+                        </Button.Background>
+                        <Button.Content>
+                            <TextBlock x:Name="go_new_text" Text="New" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
+                        </Button.Content>
+                    </Button>
+                    <Button x:Name="go_back" Width="190"  Height="40" HorizontalAlignment="Right" Click="OnBack_Click">
                             <Button.Background>
                                 <ImageBrush ImageSource="Assets/button_base.png"/>
                             </Button.Background>
@@ -110,6 +112,7 @@
                                 <TextBlock x:Name="go_back_text" Text="Back" HorizontalAlignment="Center" VerticalAlignment="Center" Height="Auto" Foreground="#ff9900" FontFamily="Arial" FontSize="24" Canvas.ZIndex="1" Margin="-50,-10" />
                             </Button.Content>
                         </Button>
+                    </StackPanel>
                 </Grid>
             </StackPanel>
 
@@ -117,7 +120,7 @@
             x:Name="EventListView"
             Grid.Row="2"
             ItemContainerTransitions="{x:Null}"
-            ItemTemplate="{StaticResource MasterListViewEventItemTemplate}"
+            ItemTemplate="{StaticResource EventListItemTemplate}"
             IsItemClickEnabled="True"
             ItemClick="EventListView_EventItemClick"
             ScrollViewer.VerticalScrollBarVisibility="Auto"

@@ -32,7 +32,7 @@ Copyright © 2016 Vesa Eskola. All rights reserved.
 #include "WellcomePage.xaml.h"
 #include "MasterDetailPage.xaml.h"
 #include "NewVehiclePage.xaml.h"
-#include "NewFuellingPage.xaml.h"
+#include "NewFuelingPage.xaml.h"
 #include "NewEventPage.xaml.h"
 #include "NewServicePage.xaml.h"
 #include "EventListpage.xaml.h"

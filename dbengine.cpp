@@ -73,7 +73,7 @@ Destructor
 --*/
 DatabaseEngine::~DatabaseEngine()
 {
-    Close();
+    CloseDatabase();
 }
 
 /*++
@@ -99,7 +99,7 @@ bool DatabaseEngine::Open(Platform::String^ fullPath)
     if (validateDatabase() == false)
     {
         // Probably an empty db file was created, need to create tables
-        Close();
+        CloseDatabase();
 
         if (Create(fullPath) == false)
         {
@@ -151,7 +151,7 @@ bool DatabaseEngine::Create(Platform::String^ fullPath)
                 "Description     TEXT," \
                 "FuelUnitId      INT," \
                 "OdometerUnitId  INT," \
-                "binData         BLOB);";
+                "ImagePath       TEXT);";
 
             /* Execute SQL statement */
             rc = sqlite3_exec(pDatabase, sql, NULL, 0, NULL);
@@ -169,6 +169,7 @@ bool DatabaseEngine::Create(Platform::String^ fullPath)
                 "Date            DATETIME DEFAULT CURRENT_TIMESTAMP," \
                 "Amount          INT              NOT NULL," \
                 "Mileage         INT," \
+                "Full            INT," \
                 "Prise           INT," \
                 "Description     TEXT);";
 
@@ -337,13 +338,13 @@ vehicleId - Index of vehicle, VECHILES table VehicleID columnn
 Return Value: FuelingInfo^. Fueling info object, nullptr if not succeeded
 
 --*/
-FuelingInfo^ DatabaseEngine::ReadLastFuellingInfoRow(int vehicleId)
+FuelingInfo^ DatabaseEngine::ReadLastFuelingInfoRow(int vehicleId)
 {
     FuelingInfo^ fuelingInfo = nullptr;
 
     if (pDatabase == NULL)
     {
-        DebugOut("DatabaseEngine::ReadLastFuellingInfoRow: pDatabase == NULL, database file not opened");
+        DebugOut("DatabaseEngine::ReadLastFuelingInfoRow: pDatabase == NULL, database file not opened");
         return nullptr;
     }
 
@@ -355,7 +356,7 @@ FuelingInfo^ DatabaseEngine::ReadLastFuellingInfoRow(int vehicleId)
         -1, &stmt, NULL);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::ReadLastFuellingInfoRow: Failed to prepare sql statement, err : %d", rc);
+        DebugOut("DatabaseEngine::ReadLastFuelingInfoRow: Failed to prepare sql statement, err : %d", rc);
         return nullptr;
     }
 
@@ -372,16 +373,18 @@ FuelingInfo^ DatabaseEngine::ReadLastFuellingInfoRow(int vehicleId)
         int64 date = sqlite3_column_int64(stmt, 2);                 // Date
         int col3 = sqlite3_column_int(stmt, 3);                     // Amount
         int col4 = sqlite3_column_int(stmt, 4);                     // Mileage
-        int col5 = sqlite3_column_int(stmt, 5);                     // Prise
-        wchar_t* col6 = (wchar_t*)sqlite3_column_text16(stmt, 6);   // Desciption
+        int col5 = sqlite3_column_int(stmt, 5);                     // Full
+        int col6 = sqlite3_column_int(stmt, 6);                     // Prise
+        wchar_t* col7 = (wchar_t*)sqlite3_column_text16(stmt, 7);   // Desciption
 
         fuelingInfo->PrimaryKey = col1;
         fuelingInfo->VehicleID = col2;
         fuelingInfo->Date = date;
         fuelingInfo->Amount = col3;
         fuelingInfo->Mileage = col4;
-        fuelingInfo->Prise = col5;
-        fuelingInfo->Description = ref new Platform::String(col6);
+        fuelingInfo->IsFull = col5 > 0 ? true : false;
+        fuelingInfo->Price = col6;
+        fuelingInfo->Description = ref new Platform::String(col7);
 
         rc = sqlite3_reset(stmt);
     }
@@ -395,13 +398,13 @@ FuelingInfo^ DatabaseEngine::ReadLastFuellingInfoRow(int vehicleId)
 /*++
 Routine Description:
 
-Read last row from FUELLING table for given vehicle
+Read last row from SERVICE table for given vehicle
 
 Arguments:
 
 vehicleId - Index of vehicle, VECHILES table VehicleID columnn
 
-Return Value: FuelingInfo^. Fueling info object, nullptr if not succeeded
+Return Value: ServiceInfo^. Service info object, nullptr if not succeeded
 
 --*/
 ServiceInfo^ DatabaseEngine::ReadLastServiceInfoRow(int vehicleId)
@@ -447,7 +450,7 @@ ServiceInfo^ DatabaseEngine::ReadLastServiceInfoRow(int vehicleId)
         serviceInfo->Date = date;
         serviceInfo->Type = col3;
         serviceInfo->Mileage = col4;
-        serviceInfo->Prise = col5;
+        serviceInfo->Price = col5;
         serviceInfo->Description = ref new Platform::String(col6);
 
         rc = sqlite3_reset(stmt);
@@ -509,16 +512,18 @@ bool DatabaseEngine::ReadAllFuelings(int vehicleId)
             int64 date = sqlite3_column_int64(stmt, 2);                 // Date
             int col3 = sqlite3_column_int(stmt, 3);                     // Amount
             int col4 = sqlite3_column_int(stmt, 4);                     // Mileage
-            int col5 = sqlite3_column_int(stmt, 5);                     // Prise
-            wchar_t* col6 = (wchar_t*)sqlite3_column_text16(stmt, 6);   // Desciption
+            int col5 = sqlite3_column_int(stmt, 5);                     // Full
+            int col6 = sqlite3_column_int(stmt, 6);                     // Prise
+            wchar_t* col7 = (wchar_t*)sqlite3_column_text16(stmt, 7);   // Desciption
 
             fuelingInfo->PrimaryKey = col1;
             fuelingInfo->VehicleID = col2;
             fuelingInfo->Date = date;
             fuelingInfo->Amount = col3;
             fuelingInfo->Mileage = col4;
-            fuelingInfo->Prise = col5;
-            fuelingInfo->Description = ref new Platform::String(col6);
+            fuelingInfo->IsFull = col5 > 0 ? true : false;
+            fuelingInfo->Price = col6;
+            fuelingInfo->Description = ref new Platform::String(col7);
 
             // Send fueling info to listeners
             FuelingInfoRead(fuelingInfo);
@@ -606,13 +611,13 @@ bool DatabaseEngine::ReadAllServices(int vehicleId)
             serviceInfo->Date = date;
             serviceInfo->Type = col3;
             serviceInfo->Mileage = col4;
-            serviceInfo->Prise = col5;
+            serviceInfo->Price = col5;
             serviceInfo->Description = ref new Platform::String(col6);
 
             // Send service info to listeners
             ServiceInfoRead(serviceInfo);
 
-            // Send fueling info capsulated into action info to listeners
+            // Send service info capsulated into action info to listeners
             ActionInfo^ actionInfo = ref new ActionInfo;
             actionInfo->setActionObject(dynamic_cast<Platform::Object^>(serviceInfo));
             ActionInfoRead(actionInfo);
@@ -695,13 +700,13 @@ bool DatabaseEngine::ReadAllEvents(int vehicleId)
             eventInfo->Date = date;
             eventInfo->EventID = col3;
             eventInfo->Mileage = col4;
-            eventInfo->Prise = col5;
+            eventInfo->Price = col5;
             eventInfo->Description = ref new Platform::String(col6);
 
             // Send event info to listeners
             EventInfoRead(eventInfo);
 
-            // Send fueling info capsulated into action info to listeners
+            // Send event info capsulated into action info to listeners
             ActionInfo^ actionInfo = ref new ActionInfo;
             actionInfo->setActionObject(dynamic_cast<Platform::Object^>(eventInfo));
             ActionInfoRead(actionInfo);
@@ -729,7 +734,8 @@ bool DatabaseEngine::ReadAllEvents(int vehicleId)
 /*++
 Routine Description:
 
-Read all vehicles from vehicles table of database
+Read all vehicles from vehicles table of database. Return short vehicle data to be shon on list view item.
+Vehicle data is returned using events.
 
 Return Value: integer Count of vehicles in the database.
 --*/
@@ -807,7 +813,6 @@ bool DatabaseEngine::ReadVehicleData(int vehicleId)
     if (rc == SQLITE_ROW)
     {
         VehicleInfo^ VehicleInfo = ref new MasterDetailApp::VehicleInfo;
-
         VehicleInfo->VehicleId = sqlite3_column_int(stmt, 0);
         VehicleInfo->VinCode = ref new Platform::String((wchar_t*)sqlite3_column_text16(stmt, 1));
         VehicleInfo->Make = ref new Platform::String((wchar_t*)sqlite3_column_text16(stmt, 2));
@@ -815,8 +820,9 @@ bool DatabaseEngine::ReadVehicleData(int vehicleId)
         VehicleInfo->Year = sqlite3_column_int(stmt, 4);
         VehicleInfo->RegPlate = ref new Platform::String((wchar_t*)sqlite3_column_text16(stmt, 5));
         VehicleInfo->Description = ref new Platform::String((wchar_t*)sqlite3_column_text16(stmt, 6));
-        VehicleInfo->OdometerUnitId = sqlite3_column_int(stmt, 7);
-        VehicleInfo->FuelUnitId = sqlite3_column_int(stmt, 8);
+        VehicleInfo->FuelUnitId = sqlite3_column_int(stmt, 7);
+        VehicleInfo->OdometerUnitId = sqlite3_column_int(stmt, 8);
+        VehicleInfo->ImagePath = ref new Platform::String((wchar_t*)sqlite3_column_text16(stmt, 9));
 
         rc = sqlite3_reset(stmt);
 
@@ -842,7 +848,7 @@ Return Value: bool. if succeeded true.
 --*/
 bool DatabaseEngine::addVehicle(VehicleInfo^ vehicleInfo)
 {
-    char* sql = "INSERT INTO VECHILES(Make, Model, Year, FuelUnitId, OdometerUnitId) VALUES(? , ?, ?, ?, ?)";
+    char* sql = "INSERT INTO VECHILES(VinCode, Make, Model, Year, RegPlate, Description, FuelUnitId, OdometerUnitId) VALUES(?,?,?,?,?,?,?,?)";
 
     sqlite3_stmt *stmt = NULL;
     int32 rc = 0;
@@ -857,11 +863,11 @@ bool DatabaseEngine::addVehicle(VehicleInfo^ vehicleInfo)
         return false;
     }
 
-    // #1 Column: 'Make'
-    if (vehicleInfo->Make->Length())
+    // #1 Column: 'VinCode'
+    if (vehicleInfo->VinCode->Length())
     {
-        std::wstring szMake(vehicleInfo->Make->Data());
-        rc = sqlite3_bind_text16(stmt, 1, szMake.c_str(), szMake.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        std::wstring szVinCode(vehicleInfo->VinCode->Data());
+        rc = sqlite3_bind_text16(stmt, 1, szVinCode.c_str(), szVinCode.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
         if (rc != SQLITE_OK)
         {
             DebugOut("DatabaseEngine::addVehicle #1: Failed to bind data, err : %d", rc);
@@ -869,11 +875,11 @@ bool DatabaseEngine::addVehicle(VehicleInfo^ vehicleInfo)
         }
     }
 
-    // #2 Column: 'Model'
-    if (vehicleInfo->Model->Length())
+    // #2 Column: 'Make'
+    if (vehicleInfo->Make->Length())
     {
-        std::wstring szModel(vehicleInfo->Model->Data());
-        rc = sqlite3_bind_text16(stmt, 2, szModel.c_str(), szModel.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        std::wstring szMake(vehicleInfo->Make->Data());
+        rc = sqlite3_bind_text16(stmt, 2, szMake.c_str(), szMake.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
         if (rc != SQLITE_OK)
         {
             DebugOut("DatabaseEngine::addVehicle #2: Failed to bind data, err : %d", rc);
@@ -881,10 +887,11 @@ bool DatabaseEngine::addVehicle(VehicleInfo^ vehicleInfo)
         }
     }
 
-    // #3 Column: 'Year'
-    if (vehicleInfo->Year > 0)
+    // #3 Column: 'Model'
+    if (vehicleInfo->Model->Length())
     {
-        rc = sqlite3_bind_int(stmt, 3, vehicleInfo->Year);
+        std::wstring szModel(vehicleInfo->Model->Data());
+        rc = sqlite3_bind_text16(stmt, 3, szModel.c_str(), szModel.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
         if (rc != SQLITE_OK)
         {
             DebugOut("DatabaseEngine::addVehicle #3: Failed to bind data, err : %d", rc);
@@ -892,20 +899,67 @@ bool DatabaseEngine::addVehicle(VehicleInfo^ vehicleInfo)
         }
     }
 
-    // #4 Column: 'FuelUnitId'
-    rc = sqlite3_bind_int(stmt, 4, vehicleInfo->FuelUnitId);
+    // #4 Column: 'Year'
+    if (vehicleInfo->Year > 0)
+    {
+        rc = sqlite3_bind_int(stmt, 4, vehicleInfo->Year);
+        if (rc != SQLITE_OK)
+        {
+            DebugOut("DatabaseEngine::addVehicle #4: Failed to bind data, err : %d", rc);
+            return false;
+        }
+    }
+
+    // #5 Column: 'RegPlate'
+    if (vehicleInfo->RegPlate->Length())
+    {
+        std::wstring szRegPlate(vehicleInfo->RegPlate->Data());
+        rc = sqlite3_bind_text16(stmt, 5, szRegPlate.c_str(), szRegPlate.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        if (rc != SQLITE_OK)
+        {
+            DebugOut("DatabaseEngine::addVehicle #5: Failed to bind data, err : %d", rc);
+            return false;
+        }
+    }
+
+    // #6 Column: 'Description'
+    if (vehicleInfo->Description->Length())
+    {
+        std::wstring szDescription(vehicleInfo->Description->Data());
+        rc = sqlite3_bind_text16(stmt, 6, szDescription.c_str(), szDescription.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        if (rc != SQLITE_OK)
+        {
+            DebugOut("DatabaseEngine::addVehicle #6: Failed to bind data, err : %d", rc);
+            return false;
+        }
+    }
+
+    // #7 Column: 'FuelUnitId'
+    rc = sqlite3_bind_int(stmt, 7, vehicleInfo->FuelUnitId);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addVehicle #4: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addVehicle #7: Failed to bind data, err : %d", rc);
         return false;
     }
 
-    // #5 Column: 'OdometerUnitId'
-    rc = sqlite3_bind_int(stmt, 5, vehicleInfo->FuelUnitId);
+    // #8 Column: 'OdometerUnitId'
+    rc = sqlite3_bind_int(stmt, 8, vehicleInfo->FuelUnitId);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addVehicle #5: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addVehicle #8: Failed to bind data, err : %d", rc);
         return false;
+    }
+
+    // #9 Column: 'ImagePath'
+    if (vehicleInfo->ImagePath->Length())
+    {
+        std::wstring szImagePath(vehicleInfo->ImagePath->Data());
+        rc = sqlite3_bind_text16(stmt, 9, szImagePath.c_str(), szImagePath.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        if (rc != SQLITE_OK)
+        {
+            DebugOut("DatabaseEngine::addVehicle #9: Failed to bind data, err : %d", rc);
+            return false;
+        }
     }
 
     rc = sqlite3_step(stmt);
@@ -1049,17 +1103,148 @@ bool DatabaseEngine::updateVehicle(int vehicleId, VehicleInfo^ vehicleInfo)
 /*++
 Routine Description:
 
-Add fuelling event of the existing vehicle
+Update the image path for the existing vehicle. Delete the previous image file.
 
 Arguments:
 
-fuellingInfo - Fueling data entered by end user
+vehicleId - Index of vehicle, VECHILES table VehicleID columnn
+newImagePath - Path of new image
 
 Return Value: bool. if succeeded true.
 --*/
-bool DatabaseEngine::addFuellingInfo(FuelingInfo ^ fuellingInfo)
+bool DatabaseEngine::updateVehicleImagePath(int vehicleId, Platform::String^ newImagePath)
 {
-    char* sql = "INSERT INTO FUELING(VehicleID, Date, Amount, Mileage, Prise, Description) VALUES(?,?,?,?,?,?)";
+    sqlite3_stmt *stmt = NULL;
+    wchar_t* szCurrentImagePath = NULL;
+    bool isReferencedByOtherVehicle = false;
+
+    // #1 Read current image path.
+    char* sql1 = "SELECT ImagePath FROM VECHILES WHERE VehicleID = ?";
+
+    int32 rc = sqlite3_prepare_v2(pDatabase,
+        sql1,
+        -1, &stmt, NULL);
+    if (rc != SQLITE_OK)
+    {
+        DebugOut("DatabaseEngine::updateVehicleImagePath: Failed to prepare sql statement, err : %d", rc);
+        return false;
+    }
+
+    rc = sqlite3_bind_int(stmt, 1, vehicleId);
+    rc = sqlite3_step(stmt);
+
+    if (rc == SQLITE_ROW)
+    {
+        szCurrentImagePath = (wchar_t*)sqlite3_column_text16(stmt, 0);   // ImagePath
+    }
+
+    // #2 Check if there is only one reference to previous image
+    if (szCurrentImagePath != NULL && wcslen(szCurrentImagePath) > 0)
+    {
+        char* sql2 = "SELECT VehicleID FROM VECHILES WHERE ImagePath = ?";
+
+        int32 rc = sqlite3_prepare_v2(pDatabase,
+            sql2,
+            -1, &stmt, NULL);
+
+        if (rc != SQLITE_OK)
+        {
+            DebugOut("DatabaseEngine::updateVehicleImagePath: Failed to prepare sql statement, err : %d", rc);
+            return false;
+        }
+
+        rc = sqlite3_bind_text16(stmt, 1, szCurrentImagePath, wcslen(szCurrentImagePath) * sizeof(wchar_t), SQLITE_TRANSIENT);
+
+        while (true)
+        {
+            rc = sqlite3_step(stmt);
+            if (rc == SQLITE_ROW)
+            {
+                int vehicleID = sqlite3_column_int(stmt, 0);                     // VehicleID
+                if (vehicleID != vehicleId)
+                {
+                    isReferencedByOtherVehicle = true;
+                }
+            }
+            else if (rc == SQLITE_DONE)
+            {
+                DebugOut("DatabaseEngine::updateVehicleImagePath: All rows read succesfully");
+                rc = sqlite3_finalize(stmt);
+                break;
+            }
+            else
+            {
+                // TBD: Should we do reset here or not ?
+                // rc = sqlite3_reset(stmt);
+                DebugOut("DatabaseEngine::updateVehicleImagePath: Failed to to step data, err : %d", rc);
+                break;
+            }
+        }
+    }
+
+    //#3 Delete the image file if not referenced anymore
+    if (isReferencedByOtherVehicle == false)
+    {
+        Platform::String^ fullPath = ref new Platform::String(szCurrentImagePath);
+        DeleteFile(fullPath);
+    }
+
+    // #4 Update the ImagePath
+    char* sql3 = "UPDATE VECHILES SET ImagePath = ? WHERE VehicleID = ?";
+
+    rc = sqlite3_prepare_v2(pDatabase,
+        sql3,
+        -1, &stmt, NULL);
+
+    if (rc != SQLITE_OK)
+    {
+        DebugOut("DatabaseEngine::updateVehicleImagePath: Failed to prepare sql statement, err : %d", rc);
+        return false;
+    }
+
+    // Column #1: 'Imagepath'
+    if (newImagePath->Length())
+    {
+        std::wstring szImagePath(newImagePath->Data());
+        rc = sqlite3_bind_text16(stmt, 1, szImagePath.c_str(), szImagePath.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        if (rc != SQLITE_OK)
+        {
+            DebugOut("DatabaseEngine::updateVehicleImagePath #1: Failed to bind data, err : %d", rc);
+            return false;
+        }
+    }
+
+    // Criteria #2: 'VehicleID'
+    rc = sqlite3_bind_int(stmt, 2, vehicleId);
+    if (rc != SQLITE_OK)
+    {
+        DebugOut("DatabaseEngine::updateVehicleImagePath #2 Failed to bind data, err : %d", rc);
+        return false;
+    }
+
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_DONE)
+    {
+        rc = sqlite3_finalize(stmt);
+
+    }
+    return rc == SQLITE_OK ? true : false;
+}
+
+/*++
+Routine Description:
+
+Add fueling event of the existing vehicle
+
+Arguments:
+
+fuelingInfo - Fueling data entered by end user
+
+Return Value: bool. if succeeded true.
+--*/
+bool DatabaseEngine::addFuelingInfo(FuelingInfo ^ fuelingInfo)
+{
+    char* sql = "INSERT INTO FUELING(VehicleID, Date, Amount, Mileage, Full, Prise, Description) VALUES(?,?,?,?,?,?,?)";
 
     sqlite3_stmt *stmt = NULL;
     int32 rc = 0;
@@ -1070,59 +1255,69 @@ bool DatabaseEngine::addFuellingInfo(FuelingInfo ^ fuellingInfo)
 
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addFuellingInfo: Failed to prepare sql statement, err : %d", rc);
+        DebugOut("DatabaseEngine::addFuelingInfo: Failed to prepare sql statement, err : %d", rc);
         return false;
     }
 
     // #1 Column: 'VehicleID'
-    rc = sqlite3_bind_int(stmt, 1, fuellingInfo->VehicleID);
+    rc = sqlite3_bind_int(stmt, 1, fuelingInfo->VehicleID);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addFuellingInfo #1: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addFuelingInfo #1: Failed to bind data, err : %d", rc);
         return false;
     }
 
     // #2 Column: 'Date'
-    int64 date = fuellingInfo->Date;
+    int64 date = fuelingInfo->Date;
     rc = sqlite3_bind_int64(stmt, 2, date);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addEventInfo #2: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addFuelingInfo #2: Failed to bind data, err : %d", rc);
         return false;
     }
 
     // #3 Column: 'Amount'
-    rc = sqlite3_bind_int(stmt, 3, fuellingInfo->Amount);
+    rc = sqlite3_bind_int(stmt, 3, fuelingInfo->Amount);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addFuellingInfo #3: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addFuelingInfo #3: Failed to bind data, err : %d", rc);
         return false;
     }
 
     // #4 Column: 'Mileage'
-    rc = sqlite3_bind_int(stmt, 4, fuellingInfo->Mileage);
+    rc = sqlite3_bind_int(stmt, 4, fuelingInfo->Mileage);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addFuellingInfo #4: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addFuelingInfo #4: Failed to bind data, err : %d", rc);
         return false;
     }
 
-    // #5 Column: 'Prise'
-    rc = sqlite3_bind_int(stmt, 5, fuellingInfo->Prise);
+    // #5 Column: 'Full'
+    int isFull = fuelingInfo->IsFull ? 1 : 0;
+
+    rc = sqlite3_bind_int(stmt, 5, isFull);
     if (rc != SQLITE_OK)
     {
-        DebugOut("DatabaseEngine::addFuellingInfo #5: Failed to bind data, err : %d", rc);
+        DebugOut("DatabaseEngine::addFuelingInfo #5: Failed to bind data, err : %d", rc);
         return false;
     }
 
-    // #6 Column: 'Description'
-    if (fuellingInfo->Description->Length())
+    // #6 Column: 'Prise'
+    rc = sqlite3_bind_int(stmt, 6, fuelingInfo->Price);
+    if (rc != SQLITE_OK)
     {
-        std::wstring szDescription(fuellingInfo->Description->Data());
-        rc = sqlite3_bind_text16(stmt, 6, szDescription.c_str(), szDescription.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        DebugOut("DatabaseEngine::addFuelingInfo #6: Failed to bind data, err : %d", rc);
+        return false;
+    }
+
+    // #7 Column: 'Description'
+    if (fuelingInfo->Description->Length())
+    {
+        std::wstring szDescription(fuelingInfo->Description->Data());
+        rc = sqlite3_bind_text16(stmt, 7, szDescription.c_str(), szDescription.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
         if (rc != SQLITE_OK)
         {
-            DebugOut("DatabaseEngine::addFuellingInfo #5: Failed to bind data, err : %d", rc);
+            DebugOut("DatabaseEngine::addFuelingInfo #7: Failed to bind data, err : %d", rc);
             return false;
         }
     }
@@ -1150,7 +1345,7 @@ Return Value: bool. if succeeded true.
 --*/
 bool DatabaseEngine::updateFuelingInfo(int primaryKey, FuelingInfo ^ fuelingInfo)
 {
-    char* sql = "UPDATE FUELING SET Date = ?, Amount = ?, Mileage = ?, Prise = ?, Description = ? WHERE PrimaryKey = ?";
+    char* sql = "UPDATE FUELING SET Date = ?, Amount = ?, Mileage = ?, Full = ?, Prise = ?, Description = ? WHERE PrimaryKey = ?";
 
     sqlite3_stmt *stmt = NULL;
     int32 rc = 0;
@@ -1190,19 +1385,27 @@ bool DatabaseEngine::updateFuelingInfo(int primaryKey, FuelingInfo ^ fuelingInfo
         return false;
     }
 
-    // #4 Column: 'Prise'
-    rc = sqlite3_bind_int(stmt, 4, fuelingInfo->Prise);
+    // #4 Column: 'Full'
+    rc = sqlite3_bind_int(stmt, 4, (int)fuelingInfo->IsFull);
+    if (rc != SQLITE_OK)
+    {
+        DebugOut("DatabaseEngine::updateFuelingInfo #3: Failed to bind data, err : %d", rc);
+        return false;
+    }
+
+    // #5 Column: 'Prise'
+    rc = sqlite3_bind_int(stmt, 5, fuelingInfo->Price);
     if (rc != SQLITE_OK)
     {
         DebugOut("DatabaseEngine::updateFuelingInfo #4: Failed to bind data, err : %d", rc);
         return false;
     }
 
-    // #5 Column: 'Description'
+    // #6 Column: 'Description'
     if (fuelingInfo->Description->Length())
     {
         std::wstring szDescription(fuelingInfo->Description->Data());
-        rc = sqlite3_bind_text16(stmt, 5, szDescription.c_str(), szDescription.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
+        rc = sqlite3_bind_text16(stmt, 6, szDescription.c_str(), szDescription.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
         if (rc != SQLITE_OK)
         {
             DebugOut("DatabaseEngine::updateFuelingInfo #5: Failed to bind data, err : %d", rc);
@@ -1210,8 +1413,8 @@ bool DatabaseEngine::updateFuelingInfo(int primaryKey, FuelingInfo ^ fuelingInfo
         }
     }
 
-    // #6 Condition Column: 'PrimaryKey'
-    rc = sqlite3_bind_int(stmt, 6, primaryKey);
+    // #7 Condition Column: 'PrimaryKey'
+    rc = sqlite3_bind_int(stmt, 7, primaryKey);
     if (rc != SQLITE_OK)
     {
         DebugOut("DatabaseEngine::updateEventInfo #6: Failed to bind data, err : %d", rc);
@@ -1289,7 +1492,7 @@ bool DatabaseEngine::addServiceInfo(ServiceInfo^ serviceInfo)
     }
 
     // #5 Column: 'Prise'
-    rc = sqlite3_bind_int(stmt, 5, serviceInfo->Prise);
+    rc = sqlite3_bind_int(stmt, 5, serviceInfo->Price);
     if (rc != SQLITE_OK)
     {
         DebugOut("DatabaseEngine::addServiceInfo #5: Failed to bind data, err : %d", rc);
@@ -1303,7 +1506,7 @@ bool DatabaseEngine::addServiceInfo(ServiceInfo^ serviceInfo)
         rc = sqlite3_bind_text16(stmt, 6, szDescription.c_str(), szDescription.size() * sizeof(wchar_t), SQLITE_TRANSIENT);
         if (rc != SQLITE_OK)
         {
-            DebugOut("DatabaseEngine::addFuellingInfo #6: Failed to bind data, err : %d", rc);
+            DebugOut("DatabaseEngine::addServiceInfo #6: Failed to bind data, err : %d", rc);
             return false;
         }
     }
@@ -1323,12 +1526,12 @@ Update existing service info
 
 Arguments:
 
-primaryKey - primary key of FUELING table
+primaryKey - primary key of SERVICE table
 serviceInfo - service data updated by end user
 
 Return Value: bool. if succeeded true.
 --*/
-bool DatabaseEngine::updateServiceInfo(int primaryKey, ServiceInfo ^ serviceInfo)
+bool DatabaseEngine::updateServiceInfo(int primaryKey, ServiceInfo^ serviceInfo)
 {
     char* sql = "UPDATE SERVICE SET Date = ?, ServiceType = ?, Mileage = ?, Prise = ?, Description = ? WHERE PrimaryKey = ?";
 
@@ -1371,7 +1574,7 @@ bool DatabaseEngine::updateServiceInfo(int primaryKey, ServiceInfo ^ serviceInfo
     }
 
     // #4 Column: 'Prise'
-    rc = sqlite3_bind_int(stmt, 4, serviceInfo->Prise);
+    rc = sqlite3_bind_int(stmt, 4, serviceInfo->Price);
     if (rc != SQLITE_OK)
     {
         DebugOut("DatabaseEngine::updateServiceInfo #4: Failed to bind data, err : %d", rc);
@@ -1471,7 +1674,7 @@ bool DatabaseEngine::addEventInfo(EventInfo^ eventInfo)
     }
 
     // #5 Column: 'Prise'
-    rc = sqlite3_bind_int(stmt, 5, eventInfo->Prise);
+    rc = sqlite3_bind_int(stmt, 5, eventInfo->Price);
     if (rc != SQLITE_OK)
     {
         DebugOut("DatabaseEngine::addServiceInfo #5: Failed to bind data, err : %d", rc);
@@ -1554,7 +1757,7 @@ bool DatabaseEngine::updateEventInfo(int primaryKey, EventInfo^ eventInfo)
     }
 
     // #4 Column: 'Prise'
-    rc = sqlite3_bind_int(stmt, 4, eventInfo->Prise);
+    rc = sqlite3_bind_int(stmt, 4, eventInfo->Price);
     if (rc != SQLITE_OK)
     {
         DebugOut("DatabaseEngine::updateEventInfo #4: Failed to bind data, err : %d", rc);
@@ -1596,7 +1799,7 @@ Routine Description:
 Close database
 
 --*/
-void DatabaseEngine::Close()
+void DatabaseEngine::CloseDatabase()
 {
     if (pDatabase != NULL)
     {
@@ -1802,6 +2005,12 @@ int DatabaseEngine::readFullVehicleInfoCB(void * NotUsed, int argc, char ** argv
                 DebugOut("readFullVehicleInfoCB: Error while converting OdometerUnitID string into integer");
             }
             VehicleInfo->OdometerUnitId = converted > 0 ? iOdometerUnitID : 0;
+        }
+        else if (i == 9 && argv[i] != NULL)     // 'ImagePath'
+        {
+            size_t converted = 0;
+            mbstowcs_s(&converted, buffer, argv[i], MAX_BUFFER);
+            VehicleInfo->ImagePath = converted > 0 ? ref new Platform::String(buffer) : nullptr;
         }
     }
 

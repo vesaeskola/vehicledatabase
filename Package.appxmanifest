@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="vesaeskola.VehicleDB" Publisher="CN=veskola" Version="0.1.1.0" />
+  <Identity Name="44518skg.319745693DBE6" Publisher="CN=9D35EFFD-1412-4A65-A230-22580AE5902B" Version="1.0.0.0" />
   <mp:PhoneIdentity PhoneProductId="5be2afdb-cae8-4f36-a598-5f337951231b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>Vehicle Database</DisplayName>
+    <DisplayName>Vehicle database</DisplayName>
     <PublisherDisplayName>Vesa Eskola</PublisherDisplayName>
-    <Logo>Assets\StoreLogo.png</Logo>
+    <Logo>Assets\StoreLogo.jpg</Logo>
   </Properties>
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.10240.0" MaxVersionTested="10.0.10586.0" />
@@ -15,15 +15,15 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="MasterDetailApp.App">
-      <uap:VisualElements DisplayName="Vehicle Database" Description="Maintain all information of you vehicles, cars, motorcycles, etc" Square44x44Logo="Assets\Square44x44Logo.png" BackgroundColor="#00b2f0" Square150x150Logo="Assets\Square150x150Logo.jpg">
-        <uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.jpg" Square310x310Logo="Assets\Square310x310Logo.png" Wide310x150Logo="Assets\Wide310x150Logo.png">
+      <uap:VisualElements DisplayName="Vehicle database" Description="Maintain all information of you vehicles, cars, motorcycles, etc" Square44x44Logo="Assets\Square44x44Logo.jpg" BackgroundColor="#00b2f0" Square150x150Logo="Assets\Square150x150Logo.jpg">
+        <uap:DefaultTile Square71x71Logo="Assets\Square71x71Logo.jpg" Square310x310Logo="Assets\Square310x310Logo.jpg" Wide310x150Logo="Assets\Wide310x150Logo.jpg" ShortName="Vehicle DB">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square150x150Logo" />
             <uap:ShowOn Tile="wide310x150Logo" />
             <uap:ShowOn Tile="square310x310Logo" />
           </uap:ShowNameOnTiles>
         </uap:DefaultTile>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.jpg" BackgroundColor="#000000" />
         <uap:InitialRotationPreference>
           <uap:Rotation Preference="portrait" />
           <uap:Rotation Preference="landscape" />
@@ -34,6 +34,7 @@
     </Application>
   </Applications>
   <Capabilities>
-    <uap:Capability Name="documentsLibrary" />
+    <Capability Name="privateNetworkClientServer" />
+    <Capability Name="internetClient" />
   </Capabilities>
 </Package>
